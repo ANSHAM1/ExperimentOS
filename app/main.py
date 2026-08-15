@@ -3,10 +3,14 @@ from fastapi import FastAPI
 from app.routes import auth_router
 
 from app.core import get_settings
-from app.db import get_db_session, PostgresDatabase
+from app.db import get_db_session, Postgres
+from app.schemas import User
 
 
-db_session = get_db_session(PostgresDatabase(get_settings().POSTGRES_URL))
+db_session = get_db_session(Postgres(get_settings().POSTGRES_URL))
+users = User()
+
+
 
 app = FastAPI(
     title="ExperimentOS",

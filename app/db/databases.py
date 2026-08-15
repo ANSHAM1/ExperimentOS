@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import (AsyncSession, async_sessionmaker, create_asy
 
 
 
-class PostgresDatabase:
+class Postgres:
 
     def __init__(self, database_url: str) -> None:
 
