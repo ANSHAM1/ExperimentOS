@@ -9,6 +9,8 @@ RUN pip install --no-cache-dir uv
 RUN uv sync --frozen
 
 COPY app ./app
+COPY alembic ./alembic
+COPY alembic.ini ./alembic.ini
 
 EXPOSE 8000
 
