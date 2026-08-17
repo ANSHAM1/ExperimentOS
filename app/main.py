@@ -1,26 +1,36 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from app.routes import auth_router
-
 from app.core import get_settings
-from app.db import get_db_session, Postgres
-from app.schemas import User
+
+from app.db import Postgres
+from app import schemas as _
 
 
-db_session = get_db_session(Postgres(get_settings().POSTGRES_URL))
-users = User()
 
+postgres = Postgres(get_settings().POSTGRES_URL)
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+
+    await postgres.init_db()
+
+    yield
+
+    await postgres.close()
 
 
 app = FastAPI(
     title="ExperimentOS",
-    version="0.1.0",
+    lifespan=lifespan,
 )
 
 
 app.include_router(auth_router)
 
 
-@app.get("/health")
+@app.get("/")
 async def health():
     return {"status": "ok"}
