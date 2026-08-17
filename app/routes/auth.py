@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.models import LoginRequest, LoginResponse
+from app.schemas import LoginRequest, LoginResponse
 
 
 auth_router = APIRouter(

@@ -1,6 +1,6 @@
-from .auth import LoginRequest, LoginResponse
+from .user_model import User
+
 
 __all__ = [
-    "LoginRequest",
-    "LoginResponse"
+    "User"
 ]

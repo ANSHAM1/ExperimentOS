@@ -1,5 +1,6 @@
-from .user_schema import User
+from .auth import LoginRequest, LoginResponse
 
 __all__ = [
-    "User"
+    "LoginRequest",
+    "LoginResponse"
 ]
