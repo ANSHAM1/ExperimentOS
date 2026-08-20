@@ -5,7 +5,8 @@ from fastapi import FastAPI
 from app.routes import auth_router
 from app.core import get_settings
 
-from app.db import Postgres, RedisClient
+from app.db import Postgres
+from app.redis import RedisClient
 from app import models as _
 
 
