@@ -32,11 +32,6 @@ class BaseRepository:
         self.session.add(entity)
 
 
-    def add_all(self, entities: list[Base]) -> None:
-
-        self.session.add_all(entities)
-
-
     async def delete(self, entity: Base) -> None:
 
         await self.session.delete(entity)

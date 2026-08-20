@@ -1,6 +1,7 @@
-from .user_model import User
+from .user_model import User, Role
 
 
 __all__ = [
-    "User"
+    "User",
+    "Role"
 ]

@@ -1,5 +1,6 @@
-from .auth_service import Auth
+from .auth_service import AuthService
+
 
 __all__ = [
-    "Auth"
+    "AuthService"
 ]
