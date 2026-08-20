@@ -1,10 +1,10 @@
 from typing import Any, Self, cast
 
-from app.db import RedisClient
+from app.redis import RedisClient
 
 
 
-class BaseCache:
+class RedisCacheRepo:
 
     def __init__(self, client: RedisClient) -> None:
 
