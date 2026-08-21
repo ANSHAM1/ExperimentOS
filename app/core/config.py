@@ -14,10 +14,10 @@ class Settings(BaseSettings):
     REDIS_URL      : str = ""
 
     JWT_SECRET_KEY : str = ""
-    JWT_ALGORITHM  : str = ""
-    JWT_ISSUER     : str = ""
-    JWT_AUDIENCE   : str = ""
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES : int = 0
+    JWT_ALGORITHM  : str = "HS256"
+    JWT_ISSUER     : str = "ExperimentOS"
+    JWT_AUDIENCE   : str = "ExperimentOS-API"
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
 
 
     model_config = SettingsConfigDict(

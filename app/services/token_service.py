@@ -1,25 +1,33 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import UUID
+import secrets
 
 import jwt
+
+from app.core import get_settings
+settings = get_settings()
 
 
 
 class TokenService:
 
-    def __init__(self, secret_key: str, algorithm: str = "", access_token_expire_minutes: int = 30, 
-                 issuer: str = "experimentos", audience: str = "experimentos-api") -> None:
+    def __init__(self) -> None:
+
+        self.secret_key: str = settings.JWT_SECRET_KEY
         
-        self.secret_key = secret_key
+        self.algorithm: str = settings.JWT_ALGORITHM
 
-        self.algorithm = algorithm
+        self.access_token_expire_minutes: int = (settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
 
-        self.access_token_expire_minutes = access_token_expire_minutes
+        self.issuer: str = settings.JWT_ISSUER
 
-        self.issuer = issuer
+        self.audience: str = settings.JWT_AUDIENCE
 
-        self.audience = audience
+
+    def create_refresh_token(self) -> str:
+
+        return secrets.token_urlsafe(64)
 
 
     def create_access_token(self, user_id: UUID, session_id: UUID, role: str) -> str:
@@ -40,10 +48,11 @@ class TokenService:
 
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm) # type: ignore
 
+
     def decode_access_token(self, token: str) -> dict[str, Any]:
 
         return jwt.decode(token, self.secret_key, algorithms=[self.algorithm], issuer=self.issuer, audience=self.audience, # type: ignore
             options={
-                "require": ["sub", "sid", "role", "iat", "exp", "iss", "aud",]
+                "require": ["sub", "sid", "role", "iat", "exp", "iss", "aud"]
             }
         )
