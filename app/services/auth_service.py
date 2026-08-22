@@ -7,11 +7,7 @@ from app.repository import UserRepository
 from app.models import User
 from app.schemas import LoginRequest, RegisterRequest, RegisterResponse, RegisterData
 
-from .password_service import PasswordService
-# from .token_service import TokenService
-
-# from app.core import get_settings
-
+from app.utils import PasswordUtility
 
 
 
@@ -31,10 +27,10 @@ class AuthService:
 
     async def Register(self, req: RegisterRequest) -> RegisterResponse:
 
-        email = req.email.strip().lower()
+        email = req.email.strip()
 
         try:
-            
+
             user_repo = UserRepository(self.db_session)
 
             if await user_repo.exists_by_email(email):
@@ -47,7 +43,7 @@ class AuthService:
             user = await user_repo.create(
                 User(
                     email=email,
-                    password_hash=PasswordService.hash(req.password)
+                    password_hash=PasswordUtility.hash(req.password)
                 )
             )
 

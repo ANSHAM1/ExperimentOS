@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import UUID
-import secrets
+# import secrets
 
 import jwt
 
@@ -10,7 +10,7 @@ settings = get_settings()
 
 
 
-class TokenService:
+class TokenUtility:
 
     def __init__(self) -> None:
 
