@@ -1,6 +1,9 @@
-from .auth import LoginRequest, LoginResponse
+from .auth_validators import LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, RegisterData
 
 __all__ = [
     "LoginRequest",
-    "LoginResponse"
+    "LoginResponse",
+    "RegisterRequest",
+    "RegisterResponse",
+    "RegisterData"
 ]

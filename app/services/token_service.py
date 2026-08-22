@@ -25,11 +25,6 @@ class TokenService:
         self.audience: str = settings.JWT_AUDIENCE
 
 
-    def create_refresh_token(self) -> str:
-
-        return secrets.token_urlsafe(64)
-
-
     def create_access_token(self, user_id: UUID, session_id: UUID, role: str) -> str:
 
         now = datetime.now(timezone.utc)
