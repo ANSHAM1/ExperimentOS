@@ -71,3 +71,39 @@ class RateLimiter:
         count = await self.increment(identifier, endpoint, window=window)
 
         return count <= limit
+
+
+class OtpValidator:
+
+    def __init__(self, client: RedisClient) -> None:
+
+        self.redis = client.client
+
+
+    def _key(self, email: str) -> str:
+
+        return f"otp:{email}"
+
+
+    async def store_otp(self, email: str, otp: str, *, window: int) -> None:
+
+        key = self._key(email)
+
+        await self.redis.set(key, otp, ex=window)
+
+
+    async def validate_otp(self, email: str, otp: str) -> bool:
+
+        key = self._key(email)
+
+        stored_otp = await self.redis.get(key)
+
+        if stored_otp is None:
+            return False
+
+        if stored_otp != otp:
+            return False
+
+        await self.redis.delete(key)
+
+        return True

@@ -23,6 +23,17 @@ class RegisterResponse(BaseModel):
 
 
 
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+    otp: str
+
+
+class EmailVerificationResponse(BaseModel):
+    success: bool
+    message: str
+
+
+
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str

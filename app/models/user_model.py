@@ -28,7 +28,7 @@ class User(Base):
 
     role          : Mapped[Role]     = mapped_column(SqlEnum(Role), nullable=False, default=Role.USER)
 
-    is_active     : Mapped[bool]     = mapped_column(Boolean, nullable=False, default=True)
+    is_active     : Mapped[bool]     = mapped_column(Boolean, nullable=False, default=False)
 
     created_at    : Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 

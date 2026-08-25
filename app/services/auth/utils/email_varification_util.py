@@ -7,7 +7,7 @@ settings = get_settings()
 
 
 
-class EmailVerificationUtil:
+class EmailVerificationUtility:
 
     @staticmethod
     def generate_otp() -> str:
@@ -16,7 +16,7 @@ class EmailVerificationUtil:
 
 
     @staticmethod
-    def send_otp(recipient: str, otp: str) -> None:
+    def send_otp(recipient: str, otp: str, expire: int) -> None:
 
         message = EmailMessage()
 
@@ -24,22 +24,18 @@ class EmailVerificationUtil:
         message["From"] = settings.SMTP_USERNAME
         message["To"] = recipient
 
-        message.set_content(
-            f"""
+        message.set_content(f"""
 Your ExperimentOS verification code is:
 
 {otp}
 
-This code will expire shortly.
+This code will expire in {expire} min.
 
 If you did not request this code, you can safely ignore this email.
 """.strip()
         )
 
-        with smtplib.SMTP(
-            settings.SMTP_HOST,
-            settings.SMTP_PORT,
-        ) as smtp:
+        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as smtp:
 
             smtp.starttls()
             smtp.login(
