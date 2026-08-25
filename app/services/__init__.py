@@ -1,4 +1,4 @@
-from .auth_service import AuthService
+from .auth.auth_service import AuthService
 
 
 __all__ = [

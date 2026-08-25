@@ -7,7 +7,7 @@ from app.repository import UserRepository
 from app.models import User
 from app.schemas import LoginRequest, RegisterRequest, RegisterResponse, RegisterData
 
-from app.utils import PasswordUtility
+from .utils import PasswordUtility
 
 
 
