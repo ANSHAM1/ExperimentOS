@@ -24,7 +24,3 @@ A distributed platform for defining, executing, monitoring, and analyzing long-r
                                 │
                                 ▼
                                JWT
-
-
-
-                               
