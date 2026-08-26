@@ -94,7 +94,7 @@ class AuthService:
         )
 
 
-    async def email_verification(self, req: EmailVerificationRequest) -> EmailVerificationResponse:
+    async def EmailVerification(self, req: EmailVerificationRequest) -> EmailVerificationResponse:
 
         email = req.email.strip().lower()
 
