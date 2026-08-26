@@ -31,4 +31,4 @@ async def login(request: LoginRequest):
 @auth_router.post("/register", response_model=RegisterResponse)
 async def register(request: RegisterRequest, db_session: DBSession):
 
-    await AuthService(db_session, redis).Register(request)
+    return await AuthService(db_session, redis).Register(request)

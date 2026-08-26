@@ -13,7 +13,6 @@ class RegisterData(BaseModel):
 class RegisterRequest(BaseModel):
     email : EmailStr
     password : str
-    role : Role
 
 
 class RegisterResponse(BaseModel):
