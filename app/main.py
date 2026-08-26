@@ -3,16 +3,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.routes import auth_router
-from app.core import get_settings
+from app.core import redis, postgres
 
-from app.db import Postgres
-from app.redis import RedisClient
 from app import models as _
 
 
-
-postgres = Postgres(get_settings().POSTGRES_URL)
-redis = RedisClient(get_settings().REDIS_URL)
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
