@@ -8,9 +8,13 @@ from app.redis import RedisClient, OtpValidator, SessionStore
 from app.repository import UserRepository
 
 from app.models import User
-from app.schemas import LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, EmailVerificationRequest, EmailVerificationResponse
+from app.schemas import LoginRequest, RefreshRequest, TokenResponse, RegisterRequest, RegisterResponse, EmailVerificationRequest, EmailVerificationResponse
+from app.schemas.auth_validators import TokenResponse
 
 from .utils import PasswordUtility, EmailVerificationUtility, TokenUtility
+
+from app.core import get_settings
+settings = get_settings()
 
 
 
@@ -23,7 +27,7 @@ class AuthService:
         self.redis_client = client
 
 
-    async def Login(self, req: LoginRequest) -> LoginResponse:
+    async def Login(self, req: LoginRequest) -> TokenResponse:
 
         user_repo = UserRepository(self.db_session)
 
@@ -32,7 +36,7 @@ class AuthService:
         user = await user_repo.get_by_email(email)
 
         if user is None or not user.is_active:
-            return LoginResponse(
+            return TokenResponse(
                 success=False,
                 message="Invalid email or password",
                 access_token=None,
@@ -41,7 +45,7 @@ class AuthService:
             )
 
         if not PasswordUtility.verify(req.password, user.password_hash):
-            return LoginResponse(
+            return TokenResponse(
                 success=False,
                 message="Invalid email or password",
                 access_token=None,
@@ -60,7 +64,7 @@ class AuthService:
             session_id=session_id,
             user_id=user.id,
             refresh_token_hash=hash_refresh_token,
-            ttl=3600
+            ttl=settings.REFRESH_TOKEN_EXPIRE_SECONDS
         )
 
         access_token = token_util.create_access_token(
@@ -69,13 +73,18 @@ class AuthService:
             role=user.role.value,
         )
 
-        return LoginResponse(
+        return TokenResponse(
             success=True,
             message="Login successful",
             access_token=access_token,
             refresh_token=refresh_token,
             token_type="bearer"
         )
+
+
+    async def refresh(self, req: RefreshRequest) -> TokenResponse:
+
+        pass
 
 
 

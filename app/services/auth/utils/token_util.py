@@ -20,7 +20,7 @@ class TokenUtility:
         
         self.algorithm: str = settings.JWT_ALGORITHM
 
-        self.access_token_expire_minutes: int = (settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+        self.access_token_expire_seconds: int = (settings.ACCESS_TOKEN_EXPIRE_SECONDS)
 
         self.issuer: str = settings.JWT_ISSUER
 
@@ -39,7 +39,7 @@ class TokenUtility:
 
         now = datetime.now(timezone.utc)
 
-        expires_at = now + timedelta(minutes=self.access_token_expire_minutes)
+        expires_at = now + timedelta(seconds=self.access_token_expire_seconds)
 
         payload: dict[str, Any] = {
             "sub": str(user_id),
