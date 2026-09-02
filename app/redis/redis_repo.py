@@ -22,7 +22,7 @@ class SessionStore:
         )
 
 
-    async def get_user(self, session_id: UUID) -> UUID | None:
+    async def get_session(self, session_id: UUID) -> tuple[UUID, str] | None:
 
         value = await self.redis.get(self._key(session_id))
 
@@ -32,7 +32,9 @@ class SessionStore:
         if isinstance(value, bytes):
             value = value.decode()
 
-        return UUID(value)
+        user_id, refresh_token_hash = value.split(":", 1)
+
+        return UUID(user_id), refresh_token_hash
 
 
     async def revoke(self, session_id: UUID) -> bool:

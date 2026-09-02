@@ -84,7 +84,64 @@ class AuthService:
 
     async def refresh(self, req: RefreshRequest) -> TokenResponse:
 
-        pass
+        session_store = SessionStore(self.redis_client)
+
+        user_session = await session_store.get_session(req.session_id)
+
+        if user_session is None:
+            return TokenResponse(
+                success=False,
+                message="Invalid session",
+                access_token=None,
+                refresh_token=None,
+                token_type=None
+            )
+
+        user_id = user_session[0]
+        stored_refresh_token_hash = user_session[1]
+
+        token_util = TokenUtility()
+
+        if not token_util.validate_refresh_token(req.refresh_token, stored_refresh_token_hash):
+            return TokenResponse(
+                success=False,
+                message="Invalid refresh token",
+                access_token=None,
+                refresh_token=None,
+                token_type=None
+            )
+
+        user_repo = UserRepository(self.db_session)
+
+        role = await user_repo.get_user_role(user_id)
+
+        new_session_id = uuid4()
+
+        new_refresh_token = token_util.create_refresh_token()
+        new_hash_refresh_token = token_util.hash_refresh_token(new_refresh_token)
+
+        await session_store.create_session(
+            session_id=new_session_id,
+            user_id=user_id,
+            refresh_token_hash=new_hash_refresh_token,
+            ttl=settings.REFRESH_TOKEN_EXPIRE_SECONDS
+        )
+
+        await session_store.revoke(req.session_id)
+
+        access_token = token_util.create_access_token(
+            user_id=user_id,
+            session_id=new_session_id,
+            role=role.value if role is not None else "user"
+        )
+
+        return TokenResponse(
+            success=True,
+            message="Token refreshed successfully",
+            access_token=access_token,
+            refresh_token=new_refresh_token,
+            token_type="bearer"
+        )
 
 
 

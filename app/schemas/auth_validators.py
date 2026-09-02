@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, EmailStr
 
 from app.models import Role
@@ -39,6 +41,7 @@ class LoginRequest(BaseModel):
 
 
 class RefreshRequest(BaseModel):
+    session_id: UUID
     refresh_token: str
 
 
