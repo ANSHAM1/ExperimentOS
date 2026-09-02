@@ -30,11 +30,6 @@ class UserRepository(BaseRepository):
         await self.session.execute(update(User).where(User.email == email).values(is_active=state))
 
 
-    async def get_user_role(self, user_id: UUID):
-
-        return (await self.session.execute(select(User.role).where(User.id == user_id))).scalar_one_or_none()
-
-
     async def create(self, user: User) -> User:
 
         self.add(user)

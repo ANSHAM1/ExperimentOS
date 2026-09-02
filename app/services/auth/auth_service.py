@@ -60,12 +60,21 @@ class AuthService:
         refresh_token = token_util.create_refresh_token()
         hash_refresh_token = token_util.hash_refresh_token(refresh_token)
 
-        await SessionStore(self.redis_client).create_session(
+        session_created = await SessionStore(self.redis_client).create_session(
             session_id=session_id,
             user_id=user.id,
             refresh_token_hash=hash_refresh_token,
             ttl=settings.REFRESH_TOKEN_EXPIRE_SECONDS
         )
+
+        if not session_created:
+            return TokenResponse(
+                success=False,
+                message="Unable to create session",
+                access_token=None,
+                refresh_token=None,
+                token_type=None,
+            )
 
         access_token = token_util.create_access_token(
             user_id=user.id,
@@ -113,26 +122,46 @@ class AuthService:
 
         user_repo = UserRepository(self.db_session)
 
-        role = await user_repo.get_user_role(user_id)
+        user = await user_repo.get_by_id(user_id)
+
+        if user is None or not user.is_active:
+            await session_store.revoke(req.session_id)
+
+            return TokenResponse(
+                success=False,
+                message="Invalid refresh token",
+                access_token=None,
+                refresh_token=None,
+                token_type=None,
+            )
 
         new_session_id = uuid4()
 
         new_refresh_token = token_util.create_refresh_token()
         new_hash_refresh_token = token_util.hash_refresh_token(new_refresh_token)
 
-        await session_store.create_session(
+        session_created = await session_store.create_session(
             session_id=new_session_id,
             user_id=user_id,
             refresh_token_hash=new_hash_refresh_token,
             ttl=settings.REFRESH_TOKEN_EXPIRE_SECONDS
         )
 
+        if not session_created:
+            return TokenResponse(
+                success=False,
+                message="Unable to refresh session",
+                access_token=None,
+                refresh_token=None,
+                token_type=None,
+            )
+
         await session_store.revoke(req.session_id)
 
         access_token = token_util.create_access_token(
             user_id=user_id,
             session_id=new_session_id,
-            role=role.value if role is not None else "user"
+            role=user.role.value
         )
 
         return TokenResponse(
@@ -142,7 +171,6 @@ class AuthService:
             refresh_token=new_refresh_token,
             token_type="bearer"
         )
-
 
 
     async def Register(self, req: RegisterRequest) -> RegisterResponse:
