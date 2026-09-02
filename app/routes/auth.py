@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas import LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, EmailVerificationRequest, EmailVerificationResponse
+from app.schemas import LoginRequest, RefreshRequest, TokenResponse, RegisterRequest, RegisterResponse, EmailVerificationRequest, EmailVerificationResponse
 from app.services import AuthService
 from app.core import redis, get_postgres_session
 
@@ -18,10 +18,16 @@ auth_router = APIRouter(
 
 
 
-@auth_router.post("/login", response_model=LoginResponse)
+@auth_router.post("/login", response_model=TokenResponse)
 async def login(request: LoginRequest, db_session: DBSession):
 
     return await AuthService(db_session, redis).Login(request)
+
+
+@auth_router.post("/refresh", response_model=TokenResponse)
+async def refresh(request: RefreshRequest, db_session: DBSession):
+
+    return await AuthService(db_session, redis).refresh(request)
 
 
 
