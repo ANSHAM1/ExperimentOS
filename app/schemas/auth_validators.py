@@ -39,5 +39,7 @@ class LoginRequest(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    access_token: str
-    token_type: str
+    success: bool
+    message: str | None
+    access_token: str | None
+    token_type: str | None

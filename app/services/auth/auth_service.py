@@ -7,7 +7,7 @@ from app.redis import RedisClient, OtpValidator
 from app.repository import UserRepository
 
 from app.models import User
-from app.schemas import LoginRequest, RegisterRequest, RegisterResponse, EmailVerificationRequest, EmailVerificationResponse
+from app.schemas import LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, EmailVerificationRequest, EmailVerificationResponse
 
 from .utils import PasswordUtility, EmailVerificationUtility
 
@@ -22,9 +22,39 @@ class AuthService:
         self.redis_client = client
 
 
-    async def Login(self, req: LoginRequest) -> None:
+    async def Login(self, req: LoginRequest) -> LoginResponse:
 
-        pass 
+        user_repo = UserRepository(self.db_session)
+
+        email = req.email.strip().lower()
+
+        try:
+
+            user = await user_repo.get_by_email(email)
+
+            if user is None or not user.is_active:
+                return LoginResponse(
+                    success=False,
+                    message="Invalid email or password",
+                    access_token=None,
+                    token_type=None
+                )
+
+            if not PasswordUtility.verify(req.password, user.password_hash):
+                return LoginResponse(
+                    success=False,
+                    message="Invalid email or password",
+                    access_token=None,
+                    token_type=None
+                )
+
+        except Exception:
+            return LoginResponse(
+                success=False,
+                message="An error occurred while processing your request", 
+                access_token=None,
+                token_type=None
+            )
 
 
     async def Register(self, req: RegisterRequest) -> RegisterResponse:

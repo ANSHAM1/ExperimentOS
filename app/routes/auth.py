@@ -21,10 +21,7 @@ auth_router = APIRouter(
 @auth_router.post("/login", response_model=LoginResponse)
 async def login(request: LoginRequest, db_session: DBSession):
 
-    return LoginResponse(
-        access_token="jwt-token",
-        token_type="bearer"
-    )
+    return await AuthService(db_session, redis).Login(request)
 
 
 
