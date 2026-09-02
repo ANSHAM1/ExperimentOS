@@ -39,6 +39,6 @@ async def register(request: RegisterRequest, db_session: DBSession):
 
 
 @auth_router.post("/verify", response_model=EmailVerificationResponse)
-async def email_verify(request: EmailVerificationRequest, db_session: DBSession):
+async def verify_email(request: EmailVerificationRequest, db_session: DBSession):
 
-    return await AuthService(db_session, redis).EmailVerification(request)
+    return await AuthService(db_session, redis).VerifyEmail(request)

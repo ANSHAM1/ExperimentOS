@@ -35,10 +35,6 @@ class TokenUtility:
         return hashlib.sha256(refresh_token.encode()).hexdigest()
 
 
-    def validate_refresh_token(self, refresh_token: str, refresh_token_hash: str) -> bool:
-        return self.hash_refresh_token(refresh_token) == refresh_token_hash
-
-
     def create_access_token(self, user_id: UUID, session_id: UUID, role: str) -> str:
 
         now = datetime.now(timezone.utc)

@@ -93,31 +93,32 @@ class AuthService:
 
     async def refresh(self, req: RefreshRequest) -> TokenResponse:
 
-        session_store = SessionStore(self.redis_client)
-
-        user_session = await session_store.get_session(req.session_id)
-
-        if user_session is None:
-            return TokenResponse(
-                success=False,
-                message="Invalid session",
-                access_token=None,
-                refresh_token=None,
-                token_type=None
-            )
-
-        user_id = user_session[0]
-        stored_refresh_token_hash = user_session[1]
-
         token_util = TokenUtility()
 
-        if not token_util.validate_refresh_token(req.refresh_token, stored_refresh_token_hash):
+        new_session_id = uuid4()
+
+        new_refresh_token = token_util.create_refresh_token()
+        new_refresh_token_hash = token_util.hash_refresh_token(new_refresh_token)
+
+        presented_refresh_token_hash = token_util.hash_refresh_token(req.refresh_token)
+
+        session_store = SessionStore(self.redis_client)
+
+        user_id = await session_store.rotate_session(
+            old_session_id=req.session_id,
+            presented_refresh_token_hash=presented_refresh_token_hash,
+            new_session_id=new_session_id,
+            new_refresh_token_hash=new_refresh_token_hash,
+            ttl=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+        )
+
+        if user_id is None:
             return TokenResponse(
                 success=False,
                 message="Invalid refresh token",
                 access_token=None,
                 refresh_token=None,
-                token_type=None
+                token_type=None,
             )
 
         user_repo = UserRepository(self.db_session)
@@ -134,29 +135,6 @@ class AuthService:
                 refresh_token=None,
                 token_type=None,
             )
-
-        new_session_id = uuid4()
-
-        new_refresh_token = token_util.create_refresh_token()
-        new_hash_refresh_token = token_util.hash_refresh_token(new_refresh_token)
-
-        session_created = await session_store.create_session(
-            session_id=new_session_id,
-            user_id=user_id,
-            refresh_token_hash=new_hash_refresh_token,
-            ttl=settings.REFRESH_TOKEN_EXPIRE_SECONDS
-        )
-
-        if not session_created:
-            return TokenResponse(
-                success=False,
-                message="Unable to refresh session",
-                access_token=None,
-                refresh_token=None,
-                token_type=None,
-            )
-
-        await session_store.revoke(req.session_id)
 
         access_token = token_util.create_access_token(
             user_id=user_id,
@@ -240,7 +218,7 @@ class AuthService:
         )
 
 
-    async def EmailVerification(self, req: EmailVerificationRequest) -> EmailVerificationResponse:
+    async def VerifyEmail(self, req: EmailVerificationRequest) -> EmailVerificationResponse:
 
         email = req.email.strip().lower()
 
