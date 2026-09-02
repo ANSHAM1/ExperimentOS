@@ -22,6 +22,21 @@ class SessionStore:
         )
 
 
+    async def get_session(self, session_id: UUID) -> tuple[UUID, str] | None:
+
+        value = await self.redis.get(self._key(session_id))
+
+        if value is None:
+            return None
+
+        if isinstance(value, bytes):
+            value = value.decode()
+
+        user_id, refresh_token_hash = value.split(":", 1)
+
+        return UUID(user_id), refresh_token_hash
+
+
     async def rotate_session(self, old_session_id: UUID, presented_refresh_token_hash: str,
         new_session_id: UUID, new_refresh_token_hash: str, ttl: int) -> UUID | None:
 
