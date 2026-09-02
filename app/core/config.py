@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     APP_NAME        : str = "ExperimentOS"
-    APP_VERSION     : str = "1.0.4"
+    APP_VERSION     : str = "1.0.9"
 
     USER_NAME       : str = ""
 
@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM   : str = "HS256"
     JWT_ISSUER      : str = "ExperimentOS"
     JWT_AUDIENCE    : str = "ExperimentOS-API"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES : int = 30
+
+    ACCESS_TOKEN_EXPIRE_SECONDS     : int = 900
+    REFRESH_TOKEN_EXPIRE_SECONDS    : int = 7*24*3600
 
 
     model_config = SettingsConfigDict(
