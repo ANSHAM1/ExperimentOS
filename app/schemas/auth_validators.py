@@ -42,4 +42,5 @@ class LoginResponse(BaseModel):
     success: bool
     message: str | None
     access_token: str | None
+    refresh_token: str | None
     token_type: str | None

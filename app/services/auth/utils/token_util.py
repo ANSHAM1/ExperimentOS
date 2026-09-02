@@ -1,8 +1,10 @@
-from datetime import datetime, timedelta, timezone
 from typing import Any
-from uuid import UUID
-# import secrets
 
+from datetime import datetime, timedelta, timezone
+from uuid import UUID
+
+import secrets
+import hashlib
 import jwt
 
 from app.core import get_settings
@@ -23,6 +25,14 @@ class TokenUtility:
         self.issuer: str = settings.JWT_ISSUER
 
         self.audience: str = settings.JWT_AUDIENCE
+
+
+    def create_refresh_token(self) -> str:
+        return secrets.token_urlsafe(64)
+
+
+    def hash_refresh_token(self, refresh_token: str) -> str:
+        return hashlib.sha256(refresh_token.encode()).hexdigest()
 
 
     def create_access_token(self, user_id: UUID, session_id: UUID, role: str) -> str:

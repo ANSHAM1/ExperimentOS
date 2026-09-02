@@ -15,10 +15,10 @@ class SessionStore:
         return f"auth:session:{session_id}"
 
 
-    async def create(self, session_id: UUID, user_id: UUID, *, ttl: int) -> bool:
+    async def create_session(self, session_id: UUID, user_id: UUID, *, refresh_token_hash: str, ttl: int) -> bool:
 
         return bool(
-            await self.redis.set(self._key(session_id), str(user_id), ex=ttl)
+            await self.redis.set(self._key(session_id), f"{user_id}:{refresh_token_hash}", ex=ttl)
         )
 
 

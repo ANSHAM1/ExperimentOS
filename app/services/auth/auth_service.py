@@ -1,15 +1,16 @@
 from datetime import datetime, timezone
+from uuid import uuid4
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.redis import RedisClient, OtpValidator
+from app.redis import RedisClient, OtpValidator, SessionStore
 from app.repository import UserRepository
 
 from app.models import User
 from app.schemas import LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, EmailVerificationRequest, EmailVerificationResponse
 
-from .utils import PasswordUtility, EmailVerificationUtility
+from .utils import PasswordUtility, EmailVerificationUtility, TokenUtility
 
 
 
@@ -28,33 +29,54 @@ class AuthService:
 
         email = req.email.strip().lower()
 
-        try:
+        user = await user_repo.get_by_email(email)
 
-            user = await user_repo.get_by_email(email)
-
-            if user is None or not user.is_active:
-                return LoginResponse(
-                    success=False,
-                    message="Invalid email or password",
-                    access_token=None,
-                    token_type=None
-                )
-
-            if not PasswordUtility.verify(req.password, user.password_hash):
-                return LoginResponse(
-                    success=False,
-                    message="Invalid email or password",
-                    access_token=None,
-                    token_type=None
-                )
-
-        except Exception:
+        if user is None or not user.is_active:
             return LoginResponse(
                 success=False,
-                message="An error occurred while processing your request", 
+                message="Invalid email or password",
                 access_token=None,
+                refresh_token=None,
                 token_type=None
             )
+
+        if not PasswordUtility.verify(req.password, user.password_hash):
+            return LoginResponse(
+                success=False,
+                message="Invalid email or password",
+                access_token=None,
+                refresh_token=None,
+                token_type=None
+            )
+
+        session_id = uuid4()
+
+        token_util = TokenUtility()
+
+        refresh_token = token_util.create_refresh_token()
+        hash_refresh_token = token_util.hash_refresh_token(refresh_token)
+
+        await SessionStore(self.redis_client).create_session(
+            session_id=session_id,
+            user_id=user.id,
+            refresh_token_hash=hash_refresh_token,
+            ttl=3600
+        )
+
+        access_token = token_util.create_access_token(
+            user_id=user.id,
+            session_id=session_id,
+            role=user.role.value,
+        )
+
+        return LoginResponse(
+            success=True,
+            message="Login successful",
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type="bearer"
+        )
+
 
 
     async def Register(self, req: RegisterRequest) -> RegisterResponse:
