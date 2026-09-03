@@ -5,6 +5,8 @@ services:
       context: .
       dockerfile: Dockerfile
 
+    container_name: experimentos-backend
+
     ports:
       - "8000:8000"
 
@@ -15,7 +17,9 @@ services:
       postgres:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
     volumes:
       - ./app:/app/app
@@ -27,13 +31,14 @@ services:
   postgres:
     image: postgres:17
 
+    container_name: experimentos-postgres
+
+    restart: unless-stopped
+
     environment:
       POSTGRES_DB: experimentos
       POSTGRES_USER: experimentos
       POSTGRES_PASSWORD: experimentos
-
-    ports:
-      - "5432:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -47,6 +52,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 5s
 
     networks:
       - experimentos-network
@@ -55,16 +61,64 @@ services:
   redis:
     image: redis:8
 
-    ports:
-      - "6379:6379"
+    container_name: experimentos-redis
+
+    restart: unless-stopped
+
+    volumes:
+      - redis_data:/data
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "ping"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
     networks:
       - experimentos-network
 
 
+  rabbitmq:
+    image: rabbitmq:4-management
+
+    container_name: experimentos-rabbitmq
+
+    restart: unless-stopped
+
+    environment:
+      RABBITMQ_DEFAULT_USER: experimentos
+      RABBITMQ_DEFAULT_PASS: experimentos
+
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "rabbitmq-diagnostics",
+          "-q",
+          "ping"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+    networks:
+      - experimentos-network
+
 
 volumes:
   postgres_data:
+  redis_data:
+  rabbitmq_data:
 
 
 networks:
