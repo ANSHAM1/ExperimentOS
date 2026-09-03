@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.routes import auth_router
-from app.core import redis, postgres
+from app.core import redis, postgres, rabbitmq
 
 from app import models as _
 
@@ -11,16 +11,17 @@ from app import models as _
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-
     await postgres.init_db()
 
     if not await redis.ping():
         raise RuntimeError("Redis connection failed")
 
+    await rabbitmq.connect()
+
     yield
 
+    await rabbitmq.close()
     await postgres.close()
-
     await redis.close()
 
 

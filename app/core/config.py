@@ -12,6 +12,7 @@ class Settings(BaseSettings):
 
     POSTGRES_URL    : str = ""
     REDIS_URL       : str = ""
+    RABBITMQ_URL    : str = ""
 
     SMTP_HOST       : str = ""
     SMTP_PORT       : int = 0
