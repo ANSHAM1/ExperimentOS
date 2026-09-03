@@ -2,7 +2,7 @@ from .auth_validators import (LoginRequest, RefreshRequest, TokenResponse, Regis
                               EmailVerificationRequest, EmailVerificationResponse)
 
 
-from .agent_validators import AgentRequest, AgentResponse
+from .agent_validators import ExperimentRequest, ExperimentResponse
 
 __all__ = [
     "LoginRequest",
@@ -13,6 +13,6 @@ __all__ = [
     "RegisterData",
     "EmailVerificationRequest",
     "EmailVerificationResponse",
-    "AgentRequest",
-    "AgentResponse"
+    "ExperimentRequest",
+    "ExperimentResponse"
 ]

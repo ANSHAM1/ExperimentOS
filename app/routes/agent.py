@@ -1,6 +1,8 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends
 
-from app.schemas import AgentRequest, AgentResponse
+from app.schemas import ExperimentRequest, ExperimentResponse
 from app.dependency import AuthDependency
 
 
@@ -12,7 +14,7 @@ agent_router = APIRouter(
 
 
 
-@agent_router.post("/agent", response_model=AgentResponse)
-async def agent(req: AgentRequest, auth: AuthDependency = Depends(AuthDependency.get_auth)):
+@agent_router.post("/experiment", response_model=ExperimentResponse)
+async def agent(req: ExperimentRequest, auth: dict[str, Any] = Depends(AuthDependency.get_auth)):
 
-    return AgentResponse(output=f"This is a sample response from the AI agent. You said: {req.prompt}")
+    return ExperimentResponse(output=f"This is a sample response from the AI agent. You said: {req}")
