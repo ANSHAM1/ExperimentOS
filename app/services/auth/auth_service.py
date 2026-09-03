@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from fastapi import Response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,7 +28,7 @@ class AuthService:
         self.redis_client = client
 
 
-    async def Login(self, req: LoginRequest) -> TokenResponse:
+    async def Login(self, req: LoginRequest, res: Response) -> TokenResponse:
 
         user_repo = UserRepository(self.db_session)
 
@@ -40,7 +41,6 @@ class AuthService:
                 success=False,
                 message="Invalid email or password",
                 access_token=None,
-                refresh_token=None,
                 token_type=None
             )
 
@@ -49,7 +49,6 @@ class AuthService:
                 success=False,
                 message="Invalid email or password",
                 access_token=None,
-                refresh_token=None,
                 token_type=None
             )
 
@@ -72,7 +71,6 @@ class AuthService:
                 success=False,
                 message="Unable to create session",
                 access_token=None,
-                refresh_token=None,
                 token_type=None,
             )
 
@@ -82,16 +80,35 @@ class AuthService:
             role=user.role.value,
         )
 
+        res.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+            path="/auth",
+        )
+
+        res.set_cookie(
+            key="session_id",
+            value=str(session_id),
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+            path="/auth",
+        )
+
         return TokenResponse(
             success=True,
             message="Login successful",
             access_token=access_token,
-            refresh_token=refresh_token,
             token_type="bearer"
         )
 
 
-    async def refresh(self, req: RefreshRequest) -> TokenResponse:
+    async def refresh(self, req: RefreshRequest, res: Response) -> TokenResponse:
 
         token_util = TokenUtility()
 
@@ -117,7 +134,6 @@ class AuthService:
                 success=False,
                 message="Invalid refresh token",
                 access_token=None,
-                refresh_token=None,
                 token_type=None,
             )
 
@@ -132,7 +148,6 @@ class AuthService:
                 success=False,
                 message="Invalid refresh token",
                 access_token=None,
-                refresh_token=None,
                 token_type=None,
             )
 
@@ -142,11 +157,30 @@ class AuthService:
             role=user.role.value
         )
 
+        res.set_cookie(
+            key="refresh_token",
+            value=new_refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+            path="/auth",
+        )
+
+        res.set_cookie(
+            key="session_id",
+            value=str(new_session_id),
+            httponly=True,
+            secure=True,
+            samesite="lax",
+            max_age=settings.REFRESH_TOKEN_EXPIRE_SECONDS,
+            path="/auth",
+        )
+
         return TokenResponse(
             success=True,
             message="Token refreshed successfully",
             access_token=access_token,
-            refresh_token=new_refresh_token,
             token_type="bearer"
         )
 
