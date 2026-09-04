@@ -12,14 +12,14 @@ settings = get_settings()
 
 
 agent_router = APIRouter(
-    prefix="/agent",
-    tags=["AI Agent Workflow"]
+    prefix="/experiment",
+    tags=["Agent Workflow"]
 )
 
 
 
-@agent_router.post("/experiment", response_model=ExperimentResponse)
-async def agent(req: ExperimentRequest, auth: dict[str, Any] = Depends(AuthDependency.get_auth)):
+@agent_router.post("/", response_model=ExperimentResponse)
+async def experiment(req: ExperimentRequest, auth: dict[str, Any] = Depends(AuthDependency.get_auth)):
 
     payload: dict[str, object] = {
         "user_id": auth["sub"],

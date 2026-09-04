@@ -24,3 +24,8 @@ class ExperimentRequest(BaseModel):
 
 class ExperimentResponse(BaseModel):
     output: str 
+
+
+
+class AgentResponse(BaseModel):
+    output: str
