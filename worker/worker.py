@@ -4,7 +4,9 @@ from app.core import rabbitmq
 from worker.consumer import ExperimentConsumer
 
 
-async def main() -> None:
+
+async def worker() -> None:
+
     await rabbitmq.connect()
 
     consumer = ExperimentConsumer(rabbitmq.channel)
@@ -17,5 +19,6 @@ async def main() -> None:
         await rabbitmq.close()
 
 
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(worker())
