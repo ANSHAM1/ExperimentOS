@@ -1,5 +1,7 @@
 from functools import lru_cache
 
+from pydantic import SecretStr
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,6 +29,11 @@ class Settings(BaseSettings):
     JWT_AUDIENCE     : str = "ExperimentOS-API"
 
     EXPERIMENT_QUEUE : str = "experiment_queue"
+
+    OPENROUTER_API_KEY : SecretStr = SecretStr("")
+    OPENROUTER_URL     : str       = ""
+
+    OPENAI_API_KEY     : SecretStr = SecretStr("")
 
     ACCESS_TOKEN_EXPIRE_SECONDS     : int = 900
     REFRESH_TOKEN_EXPIRE_SECONDS    : int = 7*24*3600
