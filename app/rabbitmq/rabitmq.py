@@ -11,7 +11,7 @@ class RabbitMQClient:
 
         self.connection: AbstractRobustConnection | None = None
 
-        self.channel: AbstractChannel | None = None
+        self.channel: AbstractChannel
 
 
     async def connect(self) -> None:
