@@ -1,7 +1,7 @@
 import json
 
 from aio_pika import Message
-from aio_pika.abc import AbstractChannel
+from aio_pika.abc import AbstractChannel, AbstractQueue
 
 
 class RabbitMQRepository:
@@ -11,9 +11,9 @@ class RabbitMQRepository:
         self.channel = channel
 
 
-    async def declare_queue(self, queue_name: str, *, durable: bool = True) -> None:
+    async def declare_queue(self, queue_name: str, *, durable: bool = True) -> AbstractQueue:
 
-        await self.channel.declare_queue(queue_name, durable=durable)
+        return await self.channel.declare_queue(queue_name, durable=durable)
 
 
     async def publish(self, queue_name: str, payload: dict[str, object]) -> None:
