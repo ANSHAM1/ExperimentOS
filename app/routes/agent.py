@@ -27,3 +27,5 @@ async def agent(req: ExperimentRequest, auth: dict[str, Any] = Depends(AuthDepen
     }
 
     await RabbitMQRepository(rabbitmq.channel).publish(settings.EXPERIMENT_QUEUE, payload)
+
+    return ExperimentResponse(output="Experiment request sent successfully.")
