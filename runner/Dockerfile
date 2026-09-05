@@ -1,14 +1,23 @@
 FROM python:3.12-slim
 
-WORKDIR /worker
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-COPY pyproject.toml uv.lock ./
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    tensorflow \
+    torch \
+    torchvision \
+    torchaudio \
+    numpy \
+    pandas \
+    scikit-learn
 
-RUN pip install --no-cache-dir uv
+WORKDIR /runner
 
-RUN uv sync --frozen
-
-COPY app ./app
 COPY runner ./runner
 
-CMD ["uv", "run", "python", "-m", "runner.runner"]
+EXPOSE 9000
+
+CMD ["uvicorn", "runner.main:app", "--host", "0.0.0.0", "--port", "9000"]

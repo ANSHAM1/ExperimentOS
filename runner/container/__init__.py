@@ -1,4 +1,4 @@
-from ..runner import ExperimentRunnerClient
+from .exp_runner_client import ExperimentRunnerClient
 
 
 __all__ = [
