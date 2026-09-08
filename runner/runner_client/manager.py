@@ -11,33 +11,21 @@ class ExecutionJob:
     experiment_id: str
     code: str
 
-    future: asyncio.Future[
-        tuple[int, str, str]
-    ]
+    future: asyncio.Future[tuple[int, str, str]]
 
 
 class ExecutionManager:
 
-    def __init__(
-        self,
-        *,
-        workers: int = 2,
-        timeout: int = 300,
-    ) -> None:
+    def __init__(self, *, workers: int = 2, timeout: int = 300) -> None:
 
         self.workers = workers
 
-        self.queue: asyncio.Queue[
-            ExecutionJob
-        ] = asyncio.Queue()
+        self.queue: asyncio.Queue[ExecutionJob] = asyncio.Queue()
 
-        self.executor = PythonExecutor(
-            timeout=timeout,
-        )
+        self.executor = PythonExecutor(timeout=timeout)
 
-        self._worker_tasks: list[
-            asyncio.Task[None]
-        ] = []
+        self._worker_tasks: list[asyncio.Task[None]] = []
+
 
     async def start(self) -> None:
 
@@ -48,6 +36,7 @@ class ExecutionManager:
             )
             for index in range(self.workers)
         ]
+
 
     async def stop(self) -> None:
 
@@ -61,11 +50,8 @@ class ExecutionManager:
 
         self._worker_tasks.clear()
 
-    async def submit(
-        self,
-        experiment_id: str,
-        code: str,
-    ) -> tuple[int, str, str]:
+
+    async def submit(self, experiment_id: str, code: str) -> tuple[int, str, str]:
 
         loop = asyncio.get_running_loop()
 
@@ -82,6 +68,7 @@ class ExecutionManager:
         await self.queue.put(job)
 
         return await future
+
 
     async def _worker(self) -> None:
 

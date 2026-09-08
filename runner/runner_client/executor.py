@@ -9,26 +9,19 @@ from pathlib import Path
 class PythonExecutor:
 
     def __init__(self, timeout: int = 300) -> None:
+        
         self.timeout = timeout
 
-    async def execute(
-        self,
-        experiment_id: str,
-        code: str,
-    ) -> tuple[int, str, str]:
 
-        with tempfile.TemporaryDirectory(
-            prefix=f"experiment-{experiment_id}-"
-        ) as directory:
+    async def execute(self, experiment_id: str, code: str) -> tuple[int, str, str]:
+
+        with tempfile.TemporaryDirectory(prefix=f"experiment-{experiment_id}-") as directory:
 
             experiment_dir = Path(directory)
 
             script_path = experiment_dir / "main.py"
 
-            script_path.write_text(
-                code,
-                encoding="utf-8",
-            )
+            script_path.write_text(code, encoding="utf-8")
 
             process = await asyncio.create_subprocess_exec(
                 sys.executable,
@@ -46,10 +39,7 @@ class PythonExecutor:
             )
 
             try:
-                stdout, stderr = await asyncio.wait_for(
-                    process.communicate(),
-                    timeout=self.timeout,
-                )
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=self.timeout)
 
             except asyncio.TimeoutError:
 
@@ -57,11 +47,7 @@ class PythonExecutor:
 
                 await process.wait()
 
-                return (
-                    -1,
-                    "",
-                    "Execution timed out.",
-                )
+                return (-1, "", "Execution timed out.")
 
             return (
                 process.returncode or 0,
