@@ -2,11 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 
-from runner_client import ExecutionManager
-from .models import (
-    ExecuteRequest,
-    ExecuteResponse,
-)
+from runner.runner_client import ExecutionManager
+from runner.models import  ExecuteRequest, ExecuteResponse
 
 
 execution_manager = ExecutionManager(
