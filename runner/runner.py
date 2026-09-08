@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 
-from .manager import ExecutionManager
+from runner_client import ExecutionManager
 from .models import (
     ExecuteRequest,
     ExecuteResponse,

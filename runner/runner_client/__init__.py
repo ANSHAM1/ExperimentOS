@@ -1,6 +1,6 @@
-from .exp_runner_client import ExperimentRunnerClient
+from .manager import ExecutionManager
 
 
 __all__ = [
-    "ExperimentRunnerClient"
+    "ExecutionManager"
 ]
