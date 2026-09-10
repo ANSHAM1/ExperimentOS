@@ -23,7 +23,7 @@ async def experiment(req: ExperimentRequest, auth: dict[str, Any] = Depends(Auth
 
     payload: dict[str, object] = {
         "user_id": auth["sub"],
-        "message": req.model_dump(mode="json"),
+        "message": req.prompt,
     }
 
     await RabbitMQRepository(rabbitmq.channel).publish(settings.EXPERIMENT_QUEUE, payload)
