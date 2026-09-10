@@ -2,8 +2,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 
-from runner.runner_client import ExecutionManager
-from runner.models import  ExecuteRequest, ExecuteResponse
+from worker.runner import ExecutionManager
+from worker.models import  ExecuteRequest, ExecuteResponse
 
 
 execution_manager = ExecutionManager(
@@ -38,24 +38,12 @@ async def health() -> dict[str, object]:
     }
 
 
-@app.post(
-    "/execute",
-    response_model=ExecuteResponse,
-)
-async def execute(
-    request: ExecuteRequest,
-) -> ExecuteResponse:
-
+@app.post("/execute", response_model=ExecuteResponse)
+async def execute(request: ExecuteRequest) -> ExecuteResponse:
+    
     try:
 
-        (
-            exit_code,
-            stdout,
-            stderr,
-        ) = await execution_manager.submit(
-            experiment_id=request.experiment_id,
-            code=request.code,
-        )
+        (exit_code, stdout, stderr) = await execution_manager.submit(experiment_id=request.experiment_id, code=request.code)
 
     except Exception as exc:
 
