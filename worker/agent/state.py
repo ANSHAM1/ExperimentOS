@@ -1,15 +1,16 @@
 from typing import Any, TypedDict
 
+from worker.schema import Step
+
 
 class ExperimentState(TypedDict, total=False):
 
     experiment_id    : str
     user_id          : str
-    prompt           : str
 
-    models           : list[dict[str, Any]]
-    dataset          : dict[str, Any]
-    metrics          : list[str]
+    step             : Step
+    prompt           : str
+    human_prompt     : str
 
     generated_code   : str
     execution_result : dict[str, Any]
