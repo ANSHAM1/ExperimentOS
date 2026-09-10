@@ -45,39 +45,6 @@ services:
       - experimentos-network
 
 
-  runner:
-    build:
-      context: .
-      dockerfile: runner/Dockerfile
-
-    container_name: experimentos-runner
-
-    env_file:
-      - .env
-
-    restart: unless-stopped
-
-    networks:
-      - experimentos-network
-
-    mem_limit: 8g
-    memswap_limit: 8g
-    cpus: 4.0
-    pids_limit: 256
-
-    read_only: true
-
-    cap_drop:
-      - ALL
-
-    security_opt:
-      - no-new-privileges:true
-
-    tmpfs:
-      - /tmp:size=1g,mode=1777
-      - /experiment:size=4g,mode=755
-
-
   postgres:
     image: postgres:17
 
