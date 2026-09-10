@@ -3,7 +3,7 @@ from typing import Any, TypedDict
 from worker.schema import Step
 
 
-class ExperimentState(TypedDict, total=False):
+class ExperimentState(TypedDict):
 
     experiment_id    : str
     user_id          : str
@@ -18,4 +18,4 @@ class ExperimentState(TypedDict, total=False):
     model_results    : list[dict[str, Any]]
     comparison       : dict[str, Any]
 
-    error            : str | None
+    terminate        : bool
