@@ -2,7 +2,7 @@ from typing import Any
 
 from worker.llm import LLM_Factory
 from worker.prompt import code_generation_prompt, code_evaluation_prompt, code_retry_prompt
-from worker.schema import Step, CodeGenOutput, CodeExeOutput
+from worker.schema import Step, CodeGenOutput, CodeEvalOutput
 
 from .state import ExperimentState
 
@@ -23,6 +23,10 @@ def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
             )
 
         case Step.EVALUATION | Step.RETRY:
+
+            if state["output_code"] is None or state["output_exec"] is None:
+                raise ValueError("Enternal Server Error - Agent Node")
+    
             prompt_template = {
                 Step.EVALUATION: code_evaluation_prompt,
                 Step.RETRY: code_retry_prompt,
@@ -31,15 +35,13 @@ def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
             prompt = prompt_template.invoke(
                 {
                     "human_prompt": state["human_prompt"],
-                    "generated_code": state["output_code"],
+                    "generated_code": state["output_code"].code,
                     "execution_result": state["output_exec"],
                 }
             )
 
         case _:
-            raise ValueError(
-                f"Unsupported experiment step: {state['step']}"
-            )
+            raise ValueError(f"Unsupported experiment step: {state['step']}")
 
     return { "prompt": prompt }
 
@@ -61,7 +63,7 @@ def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 
         case Step.EVALUATION:
             response = LLM_Factory.OpenAI_StrucutredOutput(
-                input=state["prompt"], schema=CodeExeOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
+                input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
                 )
 
             return { 
@@ -82,3 +84,9 @@ def terminate_router(state: ExperimentState) -> str:
         return "yes"
 
     return "no"
+
+
+
+def code_execution_node(state: ExperimentState) -> dict[str, Any]:
+
+    return {}
