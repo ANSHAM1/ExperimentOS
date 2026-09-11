@@ -1,8 +1,9 @@
 from typing import Any
 
 from worker.llm import LLM_Factory
-from worker.prompt import code_generation_prompt, code_evaluation_prompt, code_retry_prompt
+from worker.runner import Python
 from worker.schema import Step, CodeGenOutput, CodeEvalOutput
+from worker.prompt import code_generation_prompt, code_evaluation_prompt, code_retry_prompt
 
 from .state import ExperimentState
 
@@ -47,12 +48,12 @@ def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
 
 
 
-def code_generation_node(state: ExperimentState) -> dict[str, Any]:
+async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 
     match state["step"]:
 
         case Step.GENERATION | Step.RETRY:
-            response = LLM_Factory.OpenAI_StrucutredOutput(
+            response = await LLM_Factory.OpenAI_StrucutredOutput(
                 input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
                 )
 
@@ -62,7 +63,7 @@ def code_generation_node(state: ExperimentState) -> dict[str, Any]:
                 }
 
         case Step.EVALUATION:
-            response = LLM_Factory.OpenAI_StrucutredOutput(
+            response = await LLM_Factory.OpenAI_StrucutredOutput(
                 input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
                 )
 
@@ -87,6 +88,36 @@ def terminate_router(state: ExperimentState) -> str:
 
 
 
-def code_execution_node(state: ExperimentState) -> dict[str, Any]:
+async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
 
-    return {}
+    output_code = state["output_code"]
+
+    if output_code is None:
+        raise RuntimeError(
+            f"Missing generated code for experiment "
+            f"{state['experiment_id']}"
+        )
+
+    timeout = min(output_code.ttl, settings.MAX_EXECUTION_TIMEOUT)
+
+    try:
+        returncode, stdout, stderr = await Python.execute(state["experiment_id"], output_code.code, timeout)
+
+    except Exception as exc:
+        raise RuntimeError(
+            f"Experiment execution failed unexpectedly: "
+            f"{state['experiment_id']}"
+        ) from exc
+
+    if returncode != 0:
+        execution_output = (
+            f"Process exited with code {returncode}.\n"
+            f"STDOUT:\n{stdout}\n"
+            f"STDERR:\n{stderr}"
+        )
+    else:
+        execution_output = stdout
+
+    return {
+        "output_exec": execution_output
+    }
