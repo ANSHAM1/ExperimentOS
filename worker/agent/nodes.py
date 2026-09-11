@@ -2,7 +2,7 @@ from typing import Any
 
 from worker.llm import LLM_Factory
 from worker.runner import Python
-from worker.schema import Step, CodeGenOutput, CodeEvalOutput
+from worker.schema import Step, CodeGenOutput, CodeExeOutput, CodeEvalOutput
 from worker.prompt import code_generation_prompt, code_evaluation_prompt, code_retry_prompt
 
 from .state import ExperimentState
@@ -109,15 +109,11 @@ async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
             f"{state['experiment_id']}"
         ) from exc
 
-    if returncode != 0:
-        execution_output = (
-            f"Process exited with code {returncode}.\n"
-            f"STDOUT:\n{stdout}\n"
-            f"STDERR:\n{stderr}"
-        )
-    else:
-        execution_output = stdout
-
     return {
-        "output_exec": execution_output
+        "output_exec": CodeExeOutput(
+            returncode=returncode,
+            stdout=stdout,
+            stderr=stderr,
+            timed_out=returncode == -1,
+        )
     }

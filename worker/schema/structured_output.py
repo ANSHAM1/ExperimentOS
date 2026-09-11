@@ -10,6 +10,14 @@ class CodeGenOutput(BaseModel):
 
 
 
+class CodeExeOutput(BaseModel):
+    returncode: int
+    stdout: str
+    stderr: str
+    timed_out: bool = False
+
+
+    
 class CodeEvalOutput(BaseModel):
     experiment_type: Literal["training", "comparison"]
     results: dict[str, Any]
