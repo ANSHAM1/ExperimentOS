@@ -37,7 +37,7 @@ def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
                 {
                     "human_prompt": state["human_prompt"],
                     "generated_code": state["output_code"].code,
-                    "execution_result": state["output_exec"],
+                    "execution_result": state["output_exec"].model_dump(),
                 }
             )
 
@@ -53,24 +53,36 @@ async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
     match state["step"]:
 
         case Step.GENERATION | Step.RETRY:
-            response = await LLM_Factory.OpenAI_StrucutredOutput(
-                input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
-                )
+            try:
+                response = await LLM_Factory.OpenAI_StrucutredOutput(
+                    input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
+                    )
 
-            return { 
-                "output_code" : response,
-                "terminate" : False
+            except Exception:
+                return {
+                    "terminate": True,
                 }
+
+            return {
+                "output_code": response,
+                "terminate": False,
+            }
 
         case Step.EVALUATION:
-            response = await LLM_Factory.OpenAI_StrucutredOutput(
-                input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
-                )
+            try:
+                response = await LLM_Factory.OpenAI_StrucutredOutput(
+                    input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
+                    )
 
-            return { 
-                "output_exec" : response,
-                "terminate" : False
+            except Exception:
+                return {
+                    "terminate": True,
                 }
+
+            return {
+                "output_eval": response,
+                "terminate": False,
+            }
 
         case _:
             return {
@@ -103,17 +115,50 @@ async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
     try:
         returncode, stdout, stderr = await Python.execute(state["experiment_id"], output_code.code, timeout)
 
-    except Exception as exc:
-        raise RuntimeError(
-            f"Experiment execution failed unexpectedly: "
-            f"{state['experiment_id']}"
-        ) from exc
+    except Exception:
+        if state["retry_count"] < settings.RETRY_COUNT:
+            return {
+                "retry": True,
+            }
+
+        return {
+            "terminate": True,
+        }
+
+    execution_result = CodeExeOutput(
+        returncode=returncode,
+        stdout=stdout,
+        stderr=stderr,
+        timed_out=returncode == -1,
+    )
+
+    if returncode != 0:
+        return {
+            "output_exec": execution_result,
+            "retry": state["retry_count"] < settings.RETRY_COUNT,
+            "terminate": state["retry_count"] >= settings.RETRY_COUNT,
+        }
 
     return {
-        "output_exec": CodeExeOutput(
-            returncode=returncode,
-            stdout=stdout,
-            stderr=stderr,
-            timed_out=returncode == -1,
-        )
+        "output_exec": execution_result,
+        "retry": False,
+        "terminate": False,
+    }
+
+
+
+def retry_router(state: ExperimentState) -> str:
+
+    if state["retry"]:
+        return "yes"
+
+    return "no"
+
+
+
+def increment_retry_node(state: ExperimentState) -> dict[str, Any]:
+
+    return {
+        "retry_count": state["retry_count"] + 1,
+        "step": Step.RETRY,
     }

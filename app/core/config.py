@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     JWT_AUDIENCE     : str = "ExperimentOS-API"
 
     SELECTED_MODEL   : str = ""
+    RETRY_COUNT      : int = 3
 
     EXPERIMENT_QUEUE : str = "experiment_queue"
 

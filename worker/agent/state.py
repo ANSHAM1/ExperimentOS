@@ -10,6 +10,8 @@ class ExperimentState(TypedDict):
     experiment_id    : str
     user_id          : str
 
+    retry_count      : int
+
     step             : Step
     prompt           : PromptValue
     human_prompt     : str
@@ -20,3 +22,4 @@ class ExperimentState(TypedDict):
     output_eval      : CodeEvalOutput
 
     terminate        : bool
+    retry            : bool
