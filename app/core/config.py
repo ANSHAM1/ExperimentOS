@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     JWT_ISSUER       : str = "ExperimentOS"
     JWT_AUDIENCE     : str = "ExperimentOS-API"
 
+    SELECTED_MODEL   : str = ""
+
     EXPERIMENT_QUEUE : str = "experiment_queue"
 
     OPENROUTER_API_KEY : SecretStr = SecretStr("")
