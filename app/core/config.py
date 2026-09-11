@@ -37,6 +37,8 @@ class Settings(BaseSettings):
 
     OPENAI_API_KEY     : SecretStr = SecretStr("")
 
+    MAX_EXECUTION_TIMEOUT : int = 1800
+
     ACCESS_TOKEN_EXPIRE_SECONDS     : int = 900
     REFRESH_TOKEN_EXPIRE_SECONDS    : int = 7*24*3600
 
