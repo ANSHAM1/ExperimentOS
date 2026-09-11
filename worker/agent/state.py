@@ -1,6 +1,8 @@
-from typing import Any, TypedDict
+from typing import TypedDict
 
-from worker.schema import Step, CodeGenOutput, CodeExeOutput
+from langchain_core.prompt_values import PromptValue
+
+from worker.schema import Step, CodeGenOutput, CodeEvalOutput
 
 
 class ExperimentState(TypedDict):
@@ -9,13 +11,12 @@ class ExperimentState(TypedDict):
     user_id          : str
 
     step             : Step
-    prompt           : str
+    prompt           : PromptValue
     human_prompt     : str
 
-    output_code      : CodeGenOutput
-    output_exec      : CodeExeOutput
+    output_code      : CodeGenOutput | None 
+    output_exec      : str | None
 
-    model_results    : list[dict[str, Any]]
-    comparison       : dict[str, Any]
+    output_eval      : CodeEvalOutput
 
     terminate        : bool
