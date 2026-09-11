@@ -1,6 +1,6 @@
 from typing import Any, TypedDict
 
-from worker.schema import Step
+from worker.schema import Step, CodeGenOutput, CodeExeOutput
 
 
 class ExperimentState(TypedDict):
@@ -12,8 +12,8 @@ class ExperimentState(TypedDict):
     prompt           : str
     human_prompt     : str
 
-    generated_code   : str
-    execution_result : dict[str, Any]
+    output_code      : CodeGenOutput
+    output_exec      : CodeExeOutput
 
     model_results    : list[dict[str, Any]]
     comparison       : dict[str, Any]

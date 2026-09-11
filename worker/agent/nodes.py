@@ -2,9 +2,12 @@ from typing import Any
 
 from worker.llm import LLM_Factory
 from worker.prompt import code_generation_prompt, code_evaluation_prompt, code_retry_prompt
-from worker.schema import Step
+from worker.schema import Step, CodeGenOutput, CodeExeOutput
 
 from .state import ExperimentState
+
+from app.core import get_settings
+settings = get_settings()
 
 
 
@@ -28,8 +31,8 @@ def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
             prompt = prompt_template.invoke(
                 {
                     "human_prompt": state["human_prompt"],
-                    "generated_code": state["generated_code"],
-                    "execution_result": state["execution_result"],
+                    "generated_code": state["output_code"],
+                    "execution_result": state["output_exec"],
                 }
             )
 
@@ -38,23 +41,38 @@ def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
                 f"Unsupported experiment step: {state['step']}"
             )
 
-    return {"prompt": prompt}
+    return { "prompt": prompt }
 
 
 
 def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 
-    response = LLM_Factory.OpenAI_StrucutredOutput(input=state["prompt"], schema="", model="", temperature=0.2, reasoning=False)
+    match state["step"]:
 
-    if response is None:
-        return {
-            "terminate": True,
-        }
+        case Step.GENERATION | Step.RETRY:
+            response = LLM_Factory.OpenAI_StrucutredOutput(
+                input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
+                )
 
-    return {
-        "metadata": response,
-        "terminate": False,
-    }
+            return { 
+                "output_code" : response,
+                "terminate" : False
+                }
+
+        case Step.EVALUATION:
+            response = LLM_Factory.OpenAI_StrucutredOutput(
+                input=state["prompt"], schema=CodeExeOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
+                )
+
+            return { 
+                "output_exec" : response,
+                "terminate" : False
+                }
+
+        case _:
+            return {
+                "terminate" : True
+                }
 
 
 
