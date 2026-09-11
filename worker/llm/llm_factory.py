@@ -9,7 +9,7 @@ settings = get_settings()
 class LLM_Factory:
 
     @staticmethod
-    def OpenRouter_StructuredOutput(*, input: Any, schema: Any, model: str, temperature: float = 1.0, reasoning: bool, **kwargs: Any) -> Any:
+    async def OpenRouter_StructuredOutput(*, input: Any, schema: Any, model: str, temperature: float = 1.0, reasoning: bool, **kwargs: Any) -> Any:
 
         llm = ChatOpenAI(
             api_key=settings.OPENROUTER_API_KEY,
@@ -23,11 +23,11 @@ class LLM_Factory:
             }
         )
 
-        return llm.with_structured_output(schema=schema).invoke(input, **kwargs) # type: ignore
+        return await llm.with_structured_output(schema=schema).invoke(input, **kwargs) # type: ignore
 
 
     @staticmethod
-    def OpenAI_StrucutredOutput(*, input: Any, schema: Any, model: str, temperature: float = 1.0, reasoning: bool, **kwargs: Any) -> Any:
+    async def OpenAI_StrucutredOutput(*, input: Any, schema: Any, model: str, temperature: float = 1.0, reasoning: bool, **kwargs: Any) -> Any:
 
         llm = ChatOpenAI(
             api_key=settings.OPENAI_API_KEY,
@@ -40,4 +40,4 @@ class LLM_Factory:
             }
         )
 
-        return llm.with_structured_output(schema=schema).invoke(input, **kwargs) # type: ignore
+        return await llm.with_structured_output(schema=schema).invoke(input, **kwargs) # type: ignore
