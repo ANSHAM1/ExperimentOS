@@ -50,47 +50,42 @@ def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
 
 async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 
-    match state["step"]:
+    try:
+        response = await LLM_Factory.OpenAI_StrucutredOutput(
+            input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
+            )
 
-        case Step.GENERATION | Step.RETRY:
-            try:
-                response = await LLM_Factory.OpenAI_StrucutredOutput(
-                    input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
-                    )
+    except Exception:
+        return {
+            "terminate": True,
+        }
 
-            except Exception:
-                return {
-                    "terminate": True,
-                }
-
-            return {
-                "output_code": response,
-                "terminate": False,
-            }
-
-        case Step.EVALUATION:
-            try:
-                response = await LLM_Factory.OpenAI_StrucutredOutput(
-                    input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
-                    )
-
-            except Exception:
-                return {
-                    "terminate": True,
-                }
-
-            return {
-                "output_eval": response,
-                "terminate": False,
-            }
-
-        case _:
-            return {
-                "terminate" : True
-                }
+    return {
+        "output_code": response,
+        "terminate": False,
+    }
 
 
 
+async def code_evaluation_node(state: ExperimentState) -> dict[str, Any]:
+
+    try:
+        response = await LLM_Factory.OpenAI_StrucutredOutput(
+            input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=True
+            )
+
+    except Exception:
+        return {
+            "terminate": True,
+        }
+
+    return {
+        "output_code": response,
+        "terminate": False,
+    }
+
+
+        
 def terminate_router(state: ExperimentState) -> str:
 
     if state["terminate"]:
@@ -147,12 +142,12 @@ async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
 
 
 
-def retry_router(state: ExperimentState) -> str:
+def step_router(state: ExperimentState) -> str:
 
-    if state["retry"]:
-        return "yes"
+    if state["step"] in (Step.GENERATION, Step.RETRY):
+        return "generator_route"
 
-    return "no"
+    return "evaluator_route"
 
 
 
