@@ -77,14 +77,11 @@ async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
             input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
             )
 
-    except Exception:
-        return {
-            "terminate": True,
-        }
+    except Exception as exc:
+        raise RuntimeError("Code Generation Node - LLM Response Failure") from exc
 
     return {
-        "output_code": response,
-        "terminate": False,
+        "output_code": response
     }
 
 
@@ -96,14 +93,11 @@ async def code_evaluation_node(state: ExperimentState) -> dict[str, Any]:
             input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=True
             )
 
-    except Exception:
-        return {
-            "terminate": True,
-        }
+    except Exception as exc:
+        raise RuntimeError("Code Evaluation Node - LLM Response Failure") from exc
 
     return {
-        "output_eval": response,
-        "terminate": False,
+        "output_eval": response
     }
 
 
@@ -123,15 +117,8 @@ async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
     try:
         returncode, stdout, stderr = await Python.execute(state["experiment_id"], output_code.code, timeout)
 
-    except Exception:
-        if state["retry_count"] < settings.RETRY_COUNT:
-            return {
-                "exe_retry": True,
-            }
-
-        return {
-            "terminate": True,
-        }
+    except Exception as exc:
+        raise RuntimeError("Code Execution Node - Execution Failure") from exc
 
     execution_result = CodeExeOutput(
         returncode=returncode,
@@ -140,25 +127,13 @@ async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
         timed_out=returncode == -1,
     )
 
-    if returncode != 0:
-        return {
-            "output_exec": execution_result,
-            "retry": state["retry_count"] < settings.RETRY_COUNT,
-            "terminate": state["retry_count"] >= settings.RETRY_COUNT,
-        }
-
     return {
-        "output_exec": execution_result,
-        "retry": False,
-        "terminate": False,
+        "output_exec" : execution_result
     }
 
 
 
-def retry_router(state: ExperimentState) -> str:
-
-    if state["exe_retry"]:
-        return "exe_retry"
+def execution_router(state: ExperimentState) -> str:
 
     if state["terminate"]:
         return "terminate"
@@ -170,8 +145,30 @@ def retry_router(state: ExperimentState) -> str:
 
 
 
-def increment_retry_node(state: ExperimentState) -> dict[str, Any]:
+def retry_node(state: ExperimentState) -> dict[str, Any]:
+
+    output_exec = state["output_exec"]
+
+    if output_exec is None:
+        raise RuntimeError("Retry Node - Missing execution output")
+
+    if output_exec.returncode == 0:
+        return {
+            "retry": False,
+            "terminate": False,
+        }
+
+    retry_count = state["retry_count"] + 1
+
+    if retry_count > settings.RETRY_COUNT:
+        return {
+            "retry_count": retry_count,
+            "retry": False,
+            "terminate": True,
+        }
 
     return {
-        "retry_count": state["retry_count"] + 1,
+        "retry_count": retry_count,
+        "retry": True,
+        "terminate": False,
     }

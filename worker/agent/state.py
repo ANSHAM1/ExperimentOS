@@ -17,9 +17,7 @@ class ExperimentState(TypedDict):
 
     output_code      : CodeGenOutput | None 
     output_exec      : CodeExeOutput | None
-
-    output_eval      : CodeEvalOutput
+    output_eval      : CodeEvalOutput | None
 
     terminate        : bool
-    exe_retry        : bool
     retry            : bool
