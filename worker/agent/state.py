@@ -2,7 +2,7 @@ from typing import TypedDict
 
 from langchain_core.prompt_values import PromptValue
 
-from worker.schema import Step, CodeGenOutput, CodeExeOutput, CodeEvalOutput
+from worker.schema import CodeGenOutput, CodeExeOutput, CodeEvalOutput
 
 
 class ExperimentState(TypedDict):
@@ -12,7 +12,6 @@ class ExperimentState(TypedDict):
 
     retry_count      : int
 
-    step             : Step
     prompt           : PromptValue
     human_prompt     : str
 
@@ -22,4 +21,5 @@ class ExperimentState(TypedDict):
     output_eval      : CodeEvalOutput
 
     terminate        : bool
+    exe_retry        : bool
     retry            : bool
