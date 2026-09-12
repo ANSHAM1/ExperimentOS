@@ -2,7 +2,7 @@ from typing import Any
 
 from worker.llm import LLM_Factory
 from worker.runner import Python
-from worker.schema import Step, CodeGenOutput, CodeExeOutput, CodeEvalOutput
+from worker.schema import CodeGenOutput, CodeExeOutput, CodeEvalOutput
 from worker.prompt import code_generation_prompt, code_evaluation_prompt, code_retry_prompt
 
 from .state import ExperimentState
@@ -12,39 +12,61 @@ settings = get_settings()
 
 
 
-def prompt_builder_node(state: ExperimentState) -> dict[str, Any]:
+def generation_prompt_node(state: ExperimentState) -> dict[str, Any]:
 
-    match state["step"]:
+    prompt = code_generation_prompt.invoke(
+        {
+            "human_prompt": state["human_prompt"],
+        }
+    )
 
-        case Step.GENERATION:
-            prompt = code_generation_prompt.invoke(
-                {
-                    "human_prompt": state["human_prompt"],
-                }
-            )
+    return {
+        "prompt": prompt
+    }
 
-        case Step.EVALUATION | Step.RETRY:
 
-            if state["output_code"] is None or state["output_exec"] is None:
-                raise ValueError("Enternal Server Error - Agent Node")
-    
-            prompt_template = {
-                Step.EVALUATION: code_evaluation_prompt,
-                Step.RETRY: code_retry_prompt,
-            }[state["step"]]
 
-            prompt = prompt_template.invoke(
-                {
-                    "human_prompt": state["human_prompt"],
-                    "generated_code": state["output_code"].code,
-                    "execution_result": state["output_exec"].model_dump(),
-                }
-            )
+def retry_prompt_node(state: ExperimentState) -> dict[str, Any]:
 
-        case _:
-            raise ValueError(f"Unsupported experiment step: {state['step']}")
+    if state["output_code"] is None or state["output_exec"] is None:
+        raise RuntimeError(
+            f"Missing retry context for experiment "
+            f"{state['experiment_id']}"
+        )
 
-    return { "prompt": prompt }
+    prompt = code_retry_prompt.invoke(
+        {
+            "human_prompt": state["human_prompt"],
+            "generated_code": state["output_code"].code,
+            "execution_result": state["output_exec"].model_dump(),
+        }
+    )
+
+    return {
+        "prompt": prompt
+    }
+
+
+
+def evaluation_prompt_node(state: ExperimentState) -> dict[str, Any]:
+
+    if state["output_code"] is None or state["output_exec"] is None:
+        raise RuntimeError(
+            f"Missing evaluation context for experiment "
+            f"{state['experiment_id']}"
+        )
+
+    prompt = code_evaluation_prompt.invoke(
+        {
+            "human_prompt": state["human_prompt"],
+            "generated_code": state["output_code"].code,
+            "execution_result": state["output_exec"].model_dump(),
+        }
+    )
+
+    return {
+        "prompt": prompt
+    }
 
 
 
@@ -80,18 +102,9 @@ async def code_evaluation_node(state: ExperimentState) -> dict[str, Any]:
         }
 
     return {
-        "output_code": response,
+        "output_eval": response,
         "terminate": False,
     }
-
-
-        
-def terminate_router(state: ExperimentState) -> str:
-
-    if state["terminate"]:
-        return "yes"
-
-    return "no"
 
 
 
@@ -113,7 +126,7 @@ async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
     except Exception:
         if state["retry_count"] < settings.RETRY_COUNT:
             return {
-                "retry": True,
+                "exe_retry": True,
             }
 
         return {
@@ -142,12 +155,18 @@ async def code_execution_node(state: ExperimentState) -> dict[str, Any]:
 
 
 
-def step_router(state: ExperimentState) -> str:
+def retry_router(state: ExperimentState) -> str:
 
-    if state["step"] in (Step.GENERATION, Step.RETRY):
-        return "generator_route"
+    if state["exe_retry"]:
+        return "exe_retry"
 
-    return "evaluator_route"
+    if state["terminate"]:
+        return "terminate"
+
+    if state["retry"]:
+        return "retry"
+
+    return "evaluate"   
 
 
 
@@ -155,5 +174,4 @@ def increment_retry_node(state: ExperimentState) -> dict[str, Any]:
 
     return {
         "retry_count": state["retry_count"] + 1,
-        "step": Step.RETRY,
     }
