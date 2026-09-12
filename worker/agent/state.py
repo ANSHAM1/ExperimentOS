@@ -12,7 +12,7 @@ class ExperimentState(TypedDict):
 
     retry_count      : int
 
-    prompt           : PromptValue
+    prompt           : PromptValue | None
     human_prompt     : str
 
     output_code      : CodeGenOutput | None 

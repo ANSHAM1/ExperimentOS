@@ -52,4 +52,4 @@ builder.add_edge("evaluator", END)
 
 
 
-evaluator_graph = builder.compile() # type: ignore[arg-type]
+AgentGraph = builder.compile() # type: ignore[arg-type]
