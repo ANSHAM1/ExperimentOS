@@ -1,10 +1,29 @@
-from abc import ABC
+from worker.schema import AgentPayload
+
+from worker.agent import ExperimentState, AgentGraph
 
 
 
-class AgentDispatch(ABC):
+class AgentDispatch:
 
     @staticmethod
-    async def run(payload: dict[str, object]) -> None:
+    async def run(payload: AgentPayload) -> None:
 
-        raise NotImplementedError("Must implement the run method.")
+        state: ExperimentState = {
+            "experiment_id": payload["experiment_id"],
+            "user_id": payload["user_id"],
+
+            "retry_count": 0,
+
+            "prompt": None,
+            "human_prompt": payload["user_prompt"],
+
+            "output_code": None,
+            "output_exec": None,
+            "output_eval": None,
+
+            "terminate": False,
+            "retry": False,
+        }
+
+        await AgentGraph.ainvoke(state) # type: ignore[arg-type]
