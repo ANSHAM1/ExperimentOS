@@ -20,6 +20,7 @@ dependencies = [
     "pyjwt>=2.13.0",
     "redis>=8.1.0",
     "sqlalchemy>=2.0.52",
+    "streamlit>=1.64.0",
     "uvicorn[standard]>=0.52.1",
 ]
 
