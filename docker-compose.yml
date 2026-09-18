@@ -1,14 +1,32 @@
 services:
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+
+    container_name: experimentos-frontend
+
+    ports:
+      - "8000:8501"
+
+    environment:
+      API_BASE_URL: http://backend:8000
+
+    depends_on:
+      backend:
+        condition: service_started
+
+    networks:
+      - experimentos-network
+
+
   backend:
     build:
       context: .
       dockerfile: app/Dockerfile
 
     container_name: experimentos-backend
-
-    ports:
-      - "8000:8000"
 
     env_file:
       - .env
