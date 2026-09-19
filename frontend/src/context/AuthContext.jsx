@@ -5,7 +5,7 @@ import {
   getTokenExpiry,
   setAccessToken,
   setUnauthorizedHandler,
-} from "../lib/apiClient";
+} from "../api/apiClient";
 
 const AuthContext = createContext(null);
 
