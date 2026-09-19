@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.routes import auth_router
+from app.routes import auth_router, agent_router
 from app.core import redis, postgres, rabbitmq
 from app.rabbitmq import RabbitMQRepository
 
@@ -33,10 +33,14 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="ExperimentOS",
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+    openapi_url=None
 )
 
 
 app.include_router(auth_router)
+app.include_router(agent_router)
 
 
 @app.get("/")
