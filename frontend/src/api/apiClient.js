@@ -1,5 +1,5 @@
 // Base URL of the FastAPI backend. Set VITE_API_BASE_URL in your .env file.
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const BASE_URL = "/api";
 
 // --- in-memory access token -------------------------------------------------
 // The access token is never persisted to localStorage/sessionStorage. It only

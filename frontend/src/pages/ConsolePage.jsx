@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { experimentApi } from "../lib/apiClient";
+import { experimentApi } from "../api/apiClient";
 import Button from "../components/Button";
 
 export default function ConsolePage() {
