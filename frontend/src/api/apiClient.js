@@ -119,5 +119,5 @@ export const authApi = {
 
 export const experimentApi = {
   run: (prompt) =>
-    apiRequest("/experiment/", { method: "POST", authenticated: true, body: { prompt } }),
+    apiRequest("/agent/experiment/", { method: "POST", authenticated: true, body: { prompt } }),
 };
