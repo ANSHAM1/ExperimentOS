@@ -27,7 +27,9 @@ export function setUnauthorizedHandler(handler) {
 // --- decode a JWT's exp claim without a dependency --------------------------
 function getTokenExpiryMs(token) {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    const payload = JSON.parse(
+      atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+    );
     return typeof payload.exp === "number" ? payload.exp * 1000 : null;
   } catch {
     return null;
@@ -69,7 +71,7 @@ async function refresh() {
 // /auth/refresh on a 401 before giving up and logging the user out.
 export async function apiRequest(
   path,
-  { method = "GET", body, authenticated = false, headers = {} } = {}
+  { method = "GET", body, authenticated = false, headers = {} } = {},
 ) {
   const doFetch = () =>
     fetch(`${BASE_URL}${path}`, {
@@ -77,7 +79,9 @@ export async function apiRequest(
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        ...(authenticated && accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        ...(authenticated && accessToken
+          ? { Authorization: `Bearer ${accessToken}` }
+          : {}),
         ...headers,
       },
       body: body ? JSON.stringify(body) : undefined,
@@ -119,5 +123,9 @@ export const authApi = {
 
 export const experimentApi = {
   run: (prompt) =>
-    apiRequest("/agent/experiment/", { method: "POST", authenticated: true, body: { prompt } }),
+    apiRequest("/agent/experiment", {
+      method: "POST",
+      authenticated: true,
+      body: { prompt },
+    }),
 };
