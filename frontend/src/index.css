@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    font-feature-settings: "cv11";
+  }
+  ::selection {
+    background: theme("colors.signal.dim");
+    color: theme("colors.parchment.DEFAULT");
+  }
+  input:focus-visible,
+  button:focus-visible,
+  a:focus-visible {
+    outline: 2px solid theme("colors.signal.DEFAULT");
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

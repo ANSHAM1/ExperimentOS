@@ -21,6 +21,7 @@ dependencies = [
     "redis>=8.1.0",
     "sqlalchemy>=2.0.52",
     "streamlit>=1.64.0",
+    "streamlit-cookies-controller>=0.0.4",
     "uvicorn[standard]>=0.52.1",
 ]
 
