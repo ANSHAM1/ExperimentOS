@@ -1,5 +1,6 @@
 services:
 
+
   frontend:
     build:
       context: ./frontend
@@ -8,10 +9,7 @@ services:
     container_name: experimentos-frontend
 
     ports:
-      - "8000:8501"
-
-    environment:
-      API_BASE_URL: http://backend:8000
+      - "8000:80"
 
     depends_on:
       backend:
