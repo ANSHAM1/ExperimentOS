@@ -73,7 +73,7 @@ def evaluation_prompt_node(state: ExperimentState) -> dict[str, Any]:
 async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 
     try:
-        response = await LLM_Factory.OpenAI_StrucutredOutput(
+        response = await LLM_Factory.OpenRouter_StructuredOutput(
             input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
             )
 
@@ -89,7 +89,7 @@ async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 async def code_evaluation_node(state: ExperimentState) -> dict[str, Any]:
 
     try:
-        response = await LLM_Factory.OpenAI_StrucutredOutput(
+        response = await LLM_Factory.OpenRouter_StructuredOutput(
             input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=True
             )
 
