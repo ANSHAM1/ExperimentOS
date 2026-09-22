@@ -6,23 +6,64 @@
   html {
     color-scheme: dark;
   }
+
   body {
-    font-feature-settings: "cv11";
+    @apply bg-ink text-parchment antialiased;
+    font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings: "cv11", "ss01";
   }
+
   ::selection {
     background: theme("colors.signal.dim");
     color: theme("colors.parchment.DEFAULT");
   }
+
   input:focus-visible,
   button:focus-visible,
-  a:focus-visible {
+  a:focus-visible,
+  textarea:focus-visible {
     outline: 2px solid theme("colors.signal.DEFAULT");
     outline-offset: 2px;
   }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme("colors.ink.line-strong");
+    border-radius: 999px;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     * {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
+  }
+}
+
+@layer utilities {
+  /* Subtle film-grain texture used behind panels so the near-black
+     surfaces never feel like a flat, dead #000. Extremely low opacity. */
+  .bg-grain {
+    position: relative;
+  }
+  .bg-grain::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .text-balance {
+    text-wrap: balance;
   }
 }
