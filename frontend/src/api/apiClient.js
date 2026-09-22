@@ -1,12 +1,13 @@
-// Base URL of the FastAPI backend. Set VITE_API_BASE_URL in your .env file.
-const BASE_URL = "/api";
+// FastAPI backend URL.
+// Development/testing:
+// VITE_API_BASE_URL=http://localhost:8001
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8001";
 
-// --- in-memory access token -------------------------------------------------
-// The access token is never persisted to localStorage/sessionStorage. It only
-// ever lives in JS memory for the lifetime of the tab. Persistence across a
-// closed tab / refreshed page is handled entirely by the httpOnly
-// `refresh_token` + `session_id` cookies the backend sets on /auth/login and
-// /auth/refresh — the browser sends those automatically, JS never touches them.
+// -----------------------------------------------------------------------------
+// In-memory access token
+// -----------------------------------------------------------------------------
+
 let accessToken = null;
 let onUnauthorized = () => {};
 
@@ -18,18 +19,20 @@ export function getAccessToken() {
   return accessToken;
 }
 
-// Called by AuthContext so the client can tell it "the session is dead,
-// clear your state and send the user back to login".
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler;
 }
 
-// --- decode a JWT's exp claim without a dependency --------------------------
+// -----------------------------------------------------------------------------
+// JWT expiry
+// -----------------------------------------------------------------------------
+
 function getTokenExpiryMs(token) {
   try {
     const payload = JSON.parse(
       atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
     );
+
     return typeof payload.exp === "number" ? payload.exp * 1000 : null;
   } catch {
     return null;
@@ -40,9 +43,10 @@ export function getTokenExpiry(token) {
   return getTokenExpiryMs(token);
 }
 
-// --- refresh, de-duplicated -------------------------------------------------
-// If five requests all get a 401 at once, we want exactly one call to
-// /auth/refresh, and every caller to await the same result.
+// -----------------------------------------------------------------------------
+// Token refresh
+// -----------------------------------------------------------------------------
+
 let refreshPromise = null;
 
 async function refresh() {
@@ -53,25 +57,37 @@ async function refresh() {
     })
       .then(async (res) => {
         const data = await res.json().catch(() => null);
+
         if (!res.ok || !data?.success || !data?.access_token) {
-          throw new Error(data?.message || "Session could not be refreshed");
+          throw new Error(
+            data?.message || "Session could not be refreshed",
+          );
         }
+
         setAccessToken(data.access_token);
+
         return data.access_token;
       })
       .finally(() => {
         refreshPromise = null;
       });
   }
+
   return refreshPromise;
 }
 
-// --- core request helper -----------------------------------------------------
-// `authenticated: true` attaches the bearer token and retries once through
-// /auth/refresh on a 401 before giving up and logging the user out.
+// -----------------------------------------------------------------------------
+// Core API request
+// -----------------------------------------------------------------------------
+
 export async function apiRequest(
   path,
-  { method = "GET", body, authenticated = false, headers = {} } = {},
+  {
+    method = "GET",
+    body,
+    authenticated = false,
+    headers = {},
+  } = {},
 ) {
   const doFetch = () =>
     fetch(`${BASE_URL}${path}`, {
@@ -79,24 +95,33 @@ export async function apiRequest(
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
+
         ...(authenticated && accessToken
-          ? { Authorization: `Bearer ${accessToken}` }
+          ? {
+              Authorization: `Bearer ${accessToken}`,
+            }
           : {}),
+
         ...headers,
       },
+
       body: body ? JSON.stringify(body) : undefined,
     });
 
   let res = await doFetch();
 
+  // Access token expired.
+  // Refresh once and retry the original request.
   if (authenticated && res.status === 401) {
     try {
       await refresh();
       res = await doFetch();
-    } catch (err) {
+    } catch (error) {
       onUnauthorized();
-      throw err;
+      throw error;
     }
+
+    // Refresh succeeded but the retried request is still unauthorized.
     if (res.status === 401) {
       onUnauthorized();
     }
@@ -104,28 +129,63 @@ export async function apiRequest(
 
   const data = await res.json().catch(() => null);
 
-  if (!res.ok && !data) {
+  if (!res.ok) {
+    if (data?.message) {
+      throw new Error(data.message);
+    }
+
     throw new Error(`Request failed with status ${res.status}`);
   }
 
   return data;
 }
 
+// -----------------------------------------------------------------------------
+// Authentication API
+// -----------------------------------------------------------------------------
+
 export const authApi = {
   login: (email, password) =>
-    apiRequest("/auth/login", { method: "POST", body: { email, password } }),
+    apiRequest("/auth/login", {
+      method: "POST",
+      body: {
+        email,
+        password,
+      },
+    }),
+
   register: (email, password) =>
-    apiRequest("/auth/register", { method: "POST", body: { email, password } }),
+    apiRequest("/auth/register", {
+      method: "POST",
+      body: {
+        email,
+        password,
+      },
+    }),
+
   verifyEmail: (email, otp) =>
-    apiRequest("/auth/verify", { method: "POST", body: { email, otp } }),
+    apiRequest("/auth/verify", {
+      method: "POST",
+      body: {
+        email,
+        otp,
+      },
+    }),
+
   refresh,
 };
+
+// -----------------------------------------------------------------------------
+// Experiment API
+// -----------------------------------------------------------------------------
 
 export const experimentApi = {
   run: (prompt) =>
     apiRequest("/agent/experiment", {
       method: "POST",
       authenticated: true,
-      body: { prompt },
+      body: {
+        prompt,
+      },
     }),
 };
