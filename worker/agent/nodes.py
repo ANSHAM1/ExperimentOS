@@ -73,9 +73,11 @@ def evaluation_prompt_node(state: ExperimentState) -> dict[str, Any]:
 async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 
     try:
-        response = await LLM_Factory.OpenRouter_StructuredOutput(
-            input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=False
+        response = await LLM_Factory.OpenAI_StructuredOutput(
+            input=state["prompt"], schema=CodeGenOutput, model=settings.SELECTED_MODEL, temperature=0.2
             )
+
+        print(1)
 
     except Exception as exc:
         raise RuntimeError("Code Generation Node - LLM Response Failure") from exc
@@ -89,8 +91,8 @@ async def code_generation_node(state: ExperimentState) -> dict[str, Any]:
 async def code_evaluation_node(state: ExperimentState) -> dict[str, Any]:
 
     try:
-        response = await LLM_Factory.OpenRouter_StructuredOutput(
-            input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2, reasoning=True
+        response = await LLM_Factory.OpenAI_StructuredOutput(
+            input=state["prompt"], schema=CodeEvalOutput, model=settings.SELECTED_MODEL, temperature=0.2
             )
 
     except Exception as exc:
