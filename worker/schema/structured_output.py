@@ -1,4 +1,4 @@
-from typing import Any, Literal
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -17,10 +17,13 @@ class CodeExeOutput(BaseModel):
     timed_out: bool = False
 
 
-    
+
 class CodeEvalOutput(BaseModel):
     experiment_type: Literal["training", "comparison"]
-    results: dict[str, Any]
+    success: bool
+    results: str
+    artifacts: list[str] = Field(default_factory=list)
     best_model: str | None = None
-    comparison: dict[str, Any] | None = None
+    comparison: str | None = None
     summary: str
+    errors: list[str] = Field(default_factory=list)
