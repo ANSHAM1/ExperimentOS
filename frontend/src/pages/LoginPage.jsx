@@ -54,13 +54,13 @@ export default function LoginPage() {
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
         {error && <p className="text-[13px] text-flag">{error}</p>}
-        <Button type="submit" loading={submitting}>
+        <Button type="submit" loading={submitting} className="w-full">
           Sign in
         </Button>
       </form>
       <p className="mt-6 text-[14px] text-parchment-dim">
         New here?{" "}
-        <Link to="/register" className="text-parchment underline underline-offset-4">
+        <Link to="/register" className="text-parchment underline decoration-ink-line-strong underline-offset-4 hover:decoration-signal">
           Create an account
         </Link>
       </p>

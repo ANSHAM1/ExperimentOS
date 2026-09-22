@@ -51,17 +51,18 @@ export default function RegisterPage() {
           required
           minLength={8}
           autoComplete="new-password"
+          hint="At least 8 characters."
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
         />
         {error && <p className="text-[13px] text-flag">{error}</p>}
-        <Button type="submit" loading={submitting}>
+        <Button type="submit" loading={submitting} className="w-full">
           Create account
         </Button>
       </form>
       <p className="mt-6 text-[14px] text-parchment-dim">
         Already have an account?{" "}
-        <Link to="/login" className="text-parchment underline underline-offset-4">
+        <Link to="/login" className="text-parchment underline decoration-ink-line-strong underline-offset-4 hover:decoration-signal">
           Sign in
         </Link>
       </p>
