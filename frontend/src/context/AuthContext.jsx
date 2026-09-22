@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   authApi,
   getAccessToken,
@@ -9,11 +16,12 @@ import {
 
 const AuthContext = createContext(null);
 
-// "checking"       — restoring the session on first load
-// "authenticated"  — we hold a live access token
-// "unauthenticated"— no valid session; show the login/register flow
+// "checking"        — restoring the session on first load
+// "authenticated"   — we hold a live access token
+// "unauthenticated" — no valid session; show the login/register flow
 export function AuthProvider({ children }) {
   const [status, setStatus] = useState("checking");
+  const [email, setEmail] = useState(null);
   const refreshTimer = useRef(null);
 
   const scheduleProactiveRefresh = useCallback((token) => {
@@ -23,12 +31,13 @@ export function AuthProvider({ children }) {
     const fireIn = Math.max(expiry - Date.now() - 60_000, 5_000); // refresh 60s before expiry
     refreshTimer.current = setTimeout(async () => {
       try {
-        const token = await authApi.refresh();
+        const nextToken = await authApi.refresh();
         setStatus("authenticated");
-        scheduleProactiveRefresh(token);
+        scheduleProactiveRefresh(nextToken);
       } catch {
         handleSessionEnded();
       }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, fireIn);
   }, []);
 
@@ -36,6 +45,7 @@ export function AuthProvider({ children }) {
     clearTimeout(refreshTimer.current);
     setAccessToken(null);
     setStatus("unauthenticated");
+    setEmail(null);
   }, []);
 
   useEffect(() => {
@@ -61,24 +71,27 @@ export function AuthProvider({ children }) {
   }, [scheduleProactiveRefresh]);
 
   const login = useCallback(
-    async (email, password) => {
-      const data = await authApi.login(email, password);
-      if (!data?.success) return { success: false, message: data?.message || "Login failed" };
+    async (loginEmail, password) => {
+      const data = await authApi.login(loginEmail, password);
+      if (!data?.success) {
+        return { success: false, message: data?.message || "Login failed" };
+      }
       setAccessToken(data.access_token);
+      setEmail(loginEmail);
       setStatus("authenticated");
       scheduleProactiveRefresh(data.access_token);
       return { success: true };
     },
-    [scheduleProactiveRefresh]
+    [scheduleProactiveRefresh],
   );
 
-  const register = useCallback(async (email, password) => {
-    const data = await authApi.register(email, password);
+  const register = useCallback(async (registerEmail, password) => {
+    const data = await authApi.register(registerEmail, password);
     return { success: !!data?.success, message: data?.message || "" };
   }, []);
 
-  const verifyEmail = useCallback(async (email, otp) => {
-    const data = await authApi.verifyEmail(email, otp);
+  const verifyEmail = useCallback(async (verifyEmailAddr, otp) => {
+    const data = await authApi.verifyEmail(verifyEmailAddr, otp);
     return { success: !!data?.success, message: data?.message || "" };
   }, []);
 
@@ -96,13 +109,16 @@ export function AuthProvider({ children }) {
     status,
     isAuthenticated: status === "authenticated",
     accessToken: getAccessToken(),
+    email,
     login,
     register,
     verifyEmail,
     logout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
