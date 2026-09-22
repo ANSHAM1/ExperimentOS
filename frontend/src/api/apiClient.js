@@ -82,12 +82,7 @@ async function refresh() {
 
 export async function apiRequest(
   path,
-  {
-    method = "GET",
-    body,
-    authenticated = false,
-    headers = {},
-  } = {},
+  { method = "GET", body, authenticated = false, headers = {} } = {},
 ) {
   const doFetch = () =>
     fetch(`${BASE_URL}${path}`, {
@@ -148,28 +143,19 @@ export const authApi = {
   login: (email, password) =>
     apiRequest("/auth/login", {
       method: "POST",
-      body: {
-        email,
-        password,
-      },
+      body: { email, password },
     }),
 
   register: (email, password) =>
     apiRequest("/auth/register", {
       method: "POST",
-      body: {
-        email,
-        password,
-      },
+      body: { email, password },
     }),
 
   verifyEmail: (email, otp) =>
     apiRequest("/auth/verify", {
       method: "POST",
-      body: {
-        email,
-        otp,
-      },
+      body: { email, otp },
     }),
 
   refresh,
@@ -184,8 +170,65 @@ export const experimentApi = {
     apiRequest("/agent/experiment", {
       method: "POST",
       authenticated: true,
-      body: {
-        prompt,
-      },
+      body: { prompt },
+    }),
+};
+
+// -----------------------------------------------------------------------------
+// Database integrations API
+// -----------------------------------------------------------------------------
+//
+// NEW — this module is not yet implemented on the backend. Add these four
+// FastAPI routes (all authenticated, behind the same bearer-token dependency
+// used by /agent/experiment) to light up the "Connect a database" screen:
+//
+//   GET    /integrations/databases
+//     -> { success: true, databases: [{
+//            id, type, name, host, port, database, ssl, status,
+//            created_at
+//          }, ...] }
+//        `status` is one of "connected" | "error" | "unverified".
+//        Never return the stored password/secret in this payload.
+//
+//   POST   /integrations/databases
+//     body: { type, name, host, port, database, username, password,
+//             ssl, uri? }
+//        `type` is one of "postgresql" | "mysql" | "mongodb" | "redis".
+//        `uri` is set instead of host/port/etc. when the user pastes a
+//        full connection string.
+//     -> { success: true, database: { ...same shape as above } }
+//        or { success: false, message: "..." } if the connection
+//        attempt made server-side during creation fails.
+//
+//   POST   /integrations/databases/{id}/test
+//     -> { success: true, status: "connected" }
+//        or { success: false, status: "error", message: "..." }
+//
+//   DELETE /integrations/databases/{id}
+//     -> { success: true }
+//
+export const integrationsApi = {
+  list: () =>
+    apiRequest("/integrations/databases", {
+      authenticated: true,
+    }),
+
+  create: (payload) =>
+    apiRequest("/integrations/databases", {
+      method: "POST",
+      authenticated: true,
+      body: payload,
+    }),
+
+  test: (id) =>
+    apiRequest(`/integrations/databases/${id}/test`, {
+      method: "POST",
+      authenticated: true,
+    }),
+
+  remove: (id) =>
+    apiRequest(`/integrations/databases/${id}`, {
+      method: "DELETE",
+      authenticated: true,
     }),
 };
