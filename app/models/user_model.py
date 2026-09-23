@@ -18,6 +18,7 @@ class Role(Enum):
 
 
 class User(Base):
+    
     __tablename__ = "users"
 
     id            : Mapped[UUID]     = mapped_column(PGUUID(as_uuid=True), primary_key=True, default=uuid4)
