@@ -5,9 +5,11 @@ from pymongo import MongoClient
 
 class MongoDiagnostics:
 
-    def __init__(self, client: MongoClient[dict[str, Any]]):
+    def __init__(self, client: MongoClient[dict[str, Any]], database_name: str):
 
         self.client = client
+
+        self.database = database_name
 
 
     def server_status(self):
@@ -15,26 +17,26 @@ class MongoDiagnostics:
         return self.client.admin.command("serverStatus")
 
 
-    def database_stats(self, database_name: str):
+    def database_stats(self):
 
-        return self.client[database_name].command("dbStats")
+        return self.client[self.database].command("dbStats")
 
 
-    def collection_stats(self, database_name: str, collection_name: str):
+    def collection_stats(self, collection_name: str):
 
-        return self.client[database_name].command("collStats", collection_name)
+        return self.client[self.database].command("collStats", collection_name)
     
 
-    def indexes(self, database_name: str, collection_name: str):
+    def indexes(self, collection_name: str):
 
-        collection = self.client[database_name][collection_name]
+        collection = self.client[self.database][collection_name]
 
         return list(collection.list_indexes())
 
 
-    def index_stats(self, database_name: str, collection_name: str):
+    def index_stats(self, collection_name: str):
 
-        collection = self.client[database_name][collection_name]
+        collection = self.client[self.database][collection_name]
 
         return list(collection.aggregate([{"$indexStats": {}}]))
 
