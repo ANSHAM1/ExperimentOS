@@ -7,8 +7,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    APP_NAME         : str = "ExperimentOS"
-    APP_VERSION      : str = "1.2.0"
+    APP_NAME         : str = "QueryLens.AI"
+    APP_VERSION      : str = "2.0.0"
 
     USER_NAME        : str = ""
 
@@ -21,17 +21,17 @@ class Settings(BaseSettings):
     SMTP_USERNAME    : str = ""
     SMTP_PASSWORD    : str = ""
     SMTP_FROM_EMAIL  : str = ""
-    SMTP_FROM_NAME   : str = "ExperimentOS"
+    SMTP_FROM_NAME   : str = ""
 
     JWT_SECRET_KEY   : str = ""
-    JWT_ALGORITHM    : str = "HS256"
-    JWT_ISSUER       : str = "ExperimentOS"
-    JWT_AUDIENCE     : str = "ExperimentOS-API"
+    JWT_ALGORITHM    : str = ""
+    JWT_ISSUER       : str = ""
+    JWT_AUDIENCE     : str = ""
 
     SELECTED_MODEL   : str = ""
     RETRY_COUNT      : int = 3
 
-    EXPERIMENT_QUEUE : str = "experiment_queue"
+    EXPERIMENT_QUEUE : str = ""
 
     OPENROUTER_API_KEY : SecretStr = SecretStr("")
     OPENROUTER_URL     : str       = ""
