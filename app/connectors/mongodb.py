@@ -26,13 +26,8 @@ class MongoDBClient:
                 "connected": False,
                 "message": str(exc),
             }
-
-
-    def list_databases(self) -> list[str]:
-
-        return self.client.list_database_names()
     
 
     def close(self):
-        
+
         self.client.close()
