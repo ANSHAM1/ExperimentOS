@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader2, RefreshCw, Trash2 } from "lucide-react";
-import { getDbType } from "../lib/dbTypes";
+import { getDbType } from "../store/dbTypes";
 import StatusDot from "./StatusDot";
 
 export default function DatabaseRow({ db, onTest, onRemove }) {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Modal from "./Modal";
 import Field from "./Field";
 import Button from "./Button";
-import { DB_TYPES, getDbType } from "../lib/dbTypes";
+import { DB_TYPES, getDbType } from "../store/dbTypes";
 
 const EMPTY_FORM = {
   name: "",

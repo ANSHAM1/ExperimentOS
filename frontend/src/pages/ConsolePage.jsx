@@ -3,8 +3,7 @@ import { Plug, Send } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { experimentApi, integrationsApi } from "../api/apiClient";
-import { DB_TYPES } from "../lib/dbTypes";
-import Button from "../components/Button";
+import { DB_TYPES } from "../store/dbTypes";
 import DatabaseTypeCard from "../components/DatabaseTypeCard";
 import DatabaseRow from "../components/DatabaseRow";
 import ConnectDatabaseModal from "../components/ConnectDatabaseModal";
@@ -154,42 +153,6 @@ export default function ConsolePage() {
         </section>
 
         <div className="my-14 h-px bg-ink-line" />
-
-        <section>
-          <h2 className="font-serif text-2xl text-parchment">Run an experiment</h2>
-          <p className="mt-2 text-[15px] text-parchment-dim">
-            Prompts are queued to your agent workflow and processed asynchronously.
-          </p>
-
-          <form onSubmit={handleSubmitPrompt} className="mt-6">
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe what you want the agent to do…"
-              rows={4}
-              className="w-full resize-none rounded-lg border border-ink-line bg-ink-raised px-3.5 py-3 text-[15px] text-parchment placeholder:text-parchment-faint transition-colors focus:border-signal-dim"
-            />
-            {promptError && <p className="mt-2 text-[13px] text-flag">{promptError}</p>}
-            <div className="mt-3 flex justify-end">
-              <Button type="submit" loading={submitting} disabled={!prompt.trim()}>
-                <Send className="h-3.5 w-3.5" />
-                Send prompt
-              </Button>
-            </div>
-          </form>
-
-          {log.length > 0 && (
-            <ul className="mt-8 space-y-2.5">
-              {log.map((entry, i) => (
-                <li key={i} className="rounded-lg border border-ink-line bg-ink-panel px-4 py-3.5">
-                  <p className="text-[15px] text-parchment">{entry.prompt}</p>
-                  <p className="mt-1.5 text-[13px] text-signal-bright">{entry.output}</p>
-                  <p className="mt-1 text-[12px] text-parchment-faint">{entry.at.toLocaleTimeString()}</p>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
       </main>
 
       <ConnectDatabaseModal
