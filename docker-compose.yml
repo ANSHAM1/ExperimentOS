@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx:alpine
 
-    container_name: experimentos-nginx
+    container_name: QueryLens.AI-nginx
 
     ports:
       - "8000:80"
@@ -17,7 +17,7 @@ services:
       - backend
 
     networks:
-      - experimentos-network
+      - QueryLens.AI-network
 
 
   frontend:
@@ -25,13 +25,13 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
 
-    container_name: experimentos-frontend
+    container_name: QueryLens.AI-frontend
 
     expose:
       - "5173"
 
     networks:
-      - experimentos-network
+      - QueryLens.AI-network
 
 
   backend:
@@ -39,7 +39,7 @@ services:
       context: .
       dockerfile: app/Dockerfile
 
-    container_name: experimentos-backend
+    container_name: QueryLens.AI-backend
 
     expose:
       - "8000"
@@ -56,7 +56,7 @@ services:
         condition: service_healthy
 
     networks:
-      - experimentos-network
+      - QueryLens.AI-network
 
 
   worker:
@@ -64,7 +64,7 @@ services:
       context: .
       dockerfile: worker/Dockerfile
 
-    container_name: experimentos-worker
+    container_name: QueryLens.AI-worker
 
     env_file:
       - .env
@@ -76,20 +76,20 @@ services:
         condition: service_started
 
     networks:
-      - experimentos-network
+      - QueryLens.AI-network
 
 
   postgres:
     image: postgres:17
 
-    container_name: experimentos-postgres
+    container_name: QueryLens.AI-postgres
 
     restart: unless-stopped
 
     environment:
-      POSTGRES_DB: experimentos
-      POSTGRES_USER: experimentos
-      POSTGRES_PASSWORD: experimentos
+      POSTGRES_DB: querylens
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 11111
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -98,7 +98,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U experimentos -d experimentos"
+          "pg_isready -U admin -d querylens"
         ]
       interval: 5s
       timeout: 5s
@@ -106,13 +106,13 @@ services:
       start_period: 5s
 
     networks:
-      - experimentos-network
+      - QueryLens.AI-network
 
 
   redis:
     image: redis:8
 
-    container_name: experimentos-redis
+    container_name: QueryLens.AI-redis
 
     restart: unless-stopped
 
@@ -132,19 +132,19 @@ services:
       start_period: 5s
 
     networks:
-      - experimentos-network
+      - QueryLens.AI-network
 
 
   rabbitmq:
     image: rabbitmq:4-management
 
-    container_name: experimentos-rabbitmq
+    container_name: QueryLens.AI-rabbitmq
 
     restart: unless-stopped
 
     environment:
-      RABBITMQ_DEFAULT_USER: experimentos
-      RABBITMQ_DEFAULT_PASS: experimentos
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: 11111
 
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
@@ -163,7 +163,7 @@ services:
       start_period: 10s
 
     networks:
-      - experimentos-network
+      - QueryLens.AI-network
 
 
 volumes:
@@ -173,5 +173,5 @@ volumes:
 
 
 networks:
-  experimentos-network:
+  QueryLens.AI-network:
     driver: bridge
