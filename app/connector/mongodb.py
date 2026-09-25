@@ -6,6 +6,7 @@ from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
 from urllib.parse import urlparse, unquote
 
 
+
 class MongoDBClient:
 
     @staticmethod
@@ -36,7 +37,7 @@ class MongoDBClient:
         if self.database is None:
             return {
                 "connected": False,
-                "message": str("No Database Specified"),
+                "message": str("No Database Specified")
             }
 
         try:
@@ -44,19 +45,14 @@ class MongoDBClient:
 
             return {
                 "connected": result.get("ok") == 1,
-                "message": "MongoDB connection successful",
+                "message": "MongoDB connection successful"
             }
 
         except (ConnectionFailure, ServerSelectionTimeoutError) as exc:
             return {
                 "connected": False,
-                "message": str(exc),
+                "message": str(exc)
             }
-
-
-    def ping(self):
-
-        return self.client.admin.command("ping")
     
 
     def close(self):
