@@ -5,7 +5,7 @@ from psycopg import Connection
 
 
 
-class PostgreSQLConnection:
+class PostgreSQLClient:
 
     def __init__(self, host: str, port: int, username: str, password: str, database: str | None):
 
