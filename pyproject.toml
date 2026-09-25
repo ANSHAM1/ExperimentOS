@@ -16,6 +16,7 @@ dependencies = [
     "langchain-openai>=1.6.0",
     "langchain-openrouter>=0.2.9",
     "langgraph>=1.2.11",
+    "psycopg>=3.3.6",
     "pwdlib[argon2]>=0.3.0",
     "pydantic-settings>=2.15.0",
     "pyjwt>=2.13.0",
